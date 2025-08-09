@@ -1,11 +1,9 @@
 import { BlogData, BlogPost, Category, Tag } from "../types";
 
 const STORAGE_PREFIX = "weblog_";
-const STATIC_XML_PATH = "/data/posts.xml";
 
 // GitHub Gist Configuration
 const GITHUB_TOKEN = import.meta.env.VITE_GITHUB_TOKEN;
-const GIST_ID = localStorage.getItem("gistId") || "";
 
 // Helper functions
 export const generateId = (): string => {
@@ -19,6 +17,14 @@ export const createSlug = (title: string): string => {
     .replace(/\s+/g, "-")
     .replace(/-+/g, "-")
     .trim();
+};
+
+const getGistId = (): string => {
+  return localStorage.getItem(`${STORAGE_PREFIX}gistId`) || "";
+};
+
+const setGistId = (id: string): void => {
+  localStorage.setItem(`${STORAGE_PREFIX}gistId`, id);
 };
 
 const getDefaultBlogInfo = () => ({
@@ -49,10 +55,10 @@ const getDefaultTags = (): Tag[] => [
 // GitHub Gist API helpers
 const saveToGist = async (xmlContent: string): Promise<void> => {
   if (!GITHUB_TOKEN) {
-    console.warn("No GitHub token configured - skipping Gist backup");
-    return;
+    throw new Error("GitHub token not configured");
   }
 
+  const gistId = getGistId();
   const gistData = {
     description: "Blog Posts Backup",
     public: false,
@@ -61,12 +67,12 @@ const saveToGist = async (xmlContent: string): Promise<void> => {
     },
   };
 
-  const url = GIST_ID
-    ? `https://api.github.com/gists/${GIST_ID}`
+  const url = gistId
+    ? `https://api.github.com/gists/${gistId}`
     : "https://api.github.com/gists";
 
   const response = await fetch(url, {
-    method: GIST_ID ? "PATCH" : "POST",
+    method: gistId ? "PATCH" : "POST",
     headers: {
       Authorization: `token ${GITHUB_TOKEN}`,
       "Content-Type": "application/json",
@@ -79,41 +85,31 @@ const saveToGist = async (xmlContent: string): Promise<void> => {
     throw new Error(`Gist save failed: ${response.statusText}`);
   }
 
-  // Save new Gist ID if created
-  if (!GIST_ID && !localStorage.getItem("gistId")) {
+  if (!gistId) {
     const data = await response.json();
-    localStorage.setItem("gistId", data.id);
+    setGistId(data.id);
   }
 };
 
-const loadFromGist = async (): Promise<string | null> => {
-  if (!GITHUB_TOKEN || !GIST_ID) return null;
-
-  try {
-    const response = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
-      headers: { Authorization: `token ${GITHUB_TOKEN}` },
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to load Gist: ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    return data.files["posts.xml"].content;
-  } catch (error) {
-    console.error("Failed to load from Gist:", error);
-    return null;
+const loadFromGist = async (): Promise<string> => {
+  const gistId = getGistId();
+  if (!GITHUB_TOKEN || !gistId) {
+    throw new Error("GitHub token or Gist ID not configured");
   }
-};
 
-const loadStaticXml = async (): Promise<string> => {
-  const response = await fetch(STATIC_XML_PATH);
-  if (!response.ok) throw new Error("Failed to load static XML");
-  return await response.text();
+  const response = await fetch(`https://api.github.com/gists/${gistId}`, {
+    headers: { Authorization: `token ${GITHUB_TOKEN}` },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to load Gist: ${response.statusText}`);
+  }
+
+  const data = await response.json();
+  return data.files["posts.xml"].content;
 };
 
 export const xmlStorage = {
-  // In-memory cache
   privateCache: {
     posts: [] as BlogPost[],
     categories: [] as Category[],
@@ -121,13 +117,11 @@ export const xmlStorage = {
     initialized: false,
   },
 
-  // Initialize storage from Gist or static XML
   async initialize(): Promise<void> {
     if (this.privateCache.initialized) return;
 
     try {
-      // Try loading from Gist first
-      const xmlString = (await loadFromGist()) || (await loadStaticXml());
+      const xmlString = await loadFromGist();
       const data = await this.importFromXML(xmlString);
 
       this.privateCache.posts = data.posts;
@@ -158,10 +152,7 @@ export const xmlStorage = {
 
       this.privateCache.initialized = true;
     } catch (error) {
-      console.error(
-        "Failed to initialize from cloud storage, using defaults",
-        error
-      );
+      console.error("Failed to initialize from Gist, using defaults", error);
       this.privateCache.posts = [];
       this.privateCache.categories = getDefaultCategories();
       this.privateCache.tags = getDefaultTags();
@@ -169,39 +160,40 @@ export const xmlStorage = {
     }
   },
 
-  // XML Import/Export
   async importFromXML(xmlString: string): Promise<BlogData> {
     try {
       const parser = new DOMParser();
       const xmlDoc = parser.parseFromString(xmlString, "text/xml");
 
-      // Parse blog info
       const blogInfoNode = xmlDoc.querySelector("BLOG_INFO");
       const blogInfo = {
         domain:
-          blogInfoNode?.querySelector("DOMAIN")?.textContent?.trim() || "",
-        title: blogInfoNode?.querySelector("TITLE")?.textContent?.trim() || "",
+          blogInfoNode?.querySelector("DOMAIN")?.textContent?.trim() ||
+          getDefaultBlogInfo().domain,
+        title:
+          blogInfoNode?.querySelector("TITLE")?.textContent?.trim() ||
+          getDefaultBlogInfo().title,
         shortDescription:
           blogInfoNode
             ?.querySelector("SHORT_DESCRIPTION")
-            ?.textContent?.trim() || "",
+            ?.textContent?.trim() || getDefaultBlogInfo().shortDescription,
         fullDescription:
           blogInfoNode
             ?.querySelector("FULL_DESCRIPTION")
-            ?.textContent?.trim() || "",
+            ?.textContent?.trim() || getDefaultBlogInfo().fullDescription,
         owner: {
           userName:
             blogInfoNode
               ?.querySelector("OWNER USER USER_NAME")
-              ?.textContent?.trim() || "admin",
+              ?.textContent?.trim() || getDefaultBlogInfo().owner.userName,
           firstName:
             blogInfoNode
               ?.querySelector("OWNER USER FIRST_NAME")
-              ?.textContent?.trim() || "Admin",
+              ?.textContent?.trim() || getDefaultBlogInfo().owner.firstName,
           lastName:
             blogInfoNode
               ?.querySelector("OWNER USER LAST_NAME")
-              ?.textContent?.trim() || "User",
+              ?.textContent?.trim() || getDefaultBlogInfo().owner.lastName,
         },
         authors: Array.from(
           blogInfoNode?.querySelectorAll("AUTHORS USER") || []
@@ -215,7 +207,6 @@ export const xmlStorage = {
         })),
       };
 
-      // Parse posts
       const postNodes = xmlDoc.querySelectorAll("POSTS POST");
       const posts: BlogPost[] = Array.from(postNodes).map((postNode) => {
         const tags = Array.from(postNode.querySelectorAll("TAGS TAG NAME")).map(
@@ -342,7 +333,6 @@ export const xmlStorage = {
     return xml;
   },
 
-  // Posts CRUD
   async getAllPosts(): Promise<BlogPost[]> {
     await this.initialize();
     return [...this.privateCache.posts];
@@ -375,17 +365,12 @@ export const xmlStorage = {
       this.privateCache.posts.push(postToSave);
     }
 
-    // Save to Gist
     try {
       const xml = await this.exportToXML();
       await saveToGist(xml);
     } catch (error) {
       console.error("Failed to save to Gist:", error);
-      // Fallback to localStorage
-      localStorage.setItem(
-        `${STORAGE_PREFIX}posts`,
-        JSON.stringify(this.privateCache.posts)
-      );
+      throw error;
     }
   },
 
@@ -395,19 +380,15 @@ export const xmlStorage = {
       (post) => post.id !== id
     );
 
-    // Update Gist
     try {
       const xml = await this.exportToXML();
       await saveToGist(xml);
     } catch (error) {
       console.error("Failed to update Gist after deletion:", error);
-      // Fallback to localStorage
-      localStorage.setItem(
-        `${STORAGE_PREFIX}posts`,
-        JSON.stringify(this.privateCache.posts)
-      );
+      throw error;
     }
   },
+
   async getPublishedPosts(): Promise<BlogPost[]> {
     await this.initialize();
     return this.privateCache.posts
