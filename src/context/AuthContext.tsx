@@ -1,0 +1,87 @@
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { AuthState, User } from '../types';
+
+interface AuthContextType extends AuthState {
+  login: (username: string, password: string) => Promise<boolean>;
+  logout: () => void;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
+
+const DEMO_USER: User = {
+  id: '1',
+  username: 'admin',
+  email: 'admin@weblog.com',
+  role: 'admin'
+};
+
+// Demo credentials - in production, this would be environment variables
+const ADMIN_CREDENTIALS = {
+  username: 'admin',
+  password: 'admin123'
+};
+
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [authState, setAuthState] = useState<AuthState>({
+    isAuthenticated: false,
+    user: null,
+    loading: true
+  });
+
+  useEffect(() => {
+    // Check if user is already logged in
+    const token = localStorage.getItem('weblog_auth_token');
+    if (token) {
+      setAuthState({
+        isAuthenticated: true,
+        user: DEMO_USER,
+        loading: false
+      });
+    } else {
+      setAuthState(prev => ({ ...prev, loading: false }));
+    }
+  }, []);
+
+  const login = async (username: string, password: string): Promise<boolean> => {
+    setAuthState(prev => ({ ...prev, loading: true }));
+    
+    // Simulate API call delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
+      localStorage.setItem('weblog_auth_token', 'demo_token_123');
+      setAuthState({
+        isAuthenticated: true,
+        user: DEMO_USER,
+        loading: false
+      });
+      return true;
+    } else {
+      setAuthState(prev => ({ ...prev, loading: false }));
+      return false;
+    }
+  };
+
+  const logout = () => {
+    localStorage.removeItem('weblog_auth_token');
+    setAuthState({
+      isAuthenticated: false,
+      user: null,
+      loading: false
+    });
+  };
+
+  return (
+    <AuthContext.Provider value={{ ...authState, login, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
