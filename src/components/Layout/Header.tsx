@@ -82,7 +82,7 @@ export const Header: React.FC = () => {
           className="flex items-center space-x-2 text-xl font-bold text-gray-800"
         >
           <BookOutlined className="text-blue-600" size={24} />
-          <span>Weblog</span>
+          <span>My Weblog</span>
         </Link>
 
         <div className="flex items-center space-x-4">
