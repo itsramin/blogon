@@ -1,9 +1,8 @@
 import { BlogData, BlogPost, Category, Tag } from "../types";
 
-const STORAGE_PREFIX = "weblog_";
-
 // GitHub Gist Configuration
 const GITHUB_TOKEN = import.meta.env.VITE_GITHUB_TOKEN;
+const GIST_ID = import.meta.env.VITE_GIST_ID;
 
 // Helper functions
 export const generateId = (): string => {
@@ -17,14 +16,6 @@ export const createSlug = (title: string): string => {
     .replace(/\s+/g, "-")
     .replace(/-+/g, "-")
     .trim();
-};
-
-const getGistId = (): string => {
-  return localStorage.getItem(`${STORAGE_PREFIX}gistId`) || "";
-};
-
-const setGistId = (id: string): void => {
-  localStorage.setItem(`${STORAGE_PREFIX}gistId`, id);
 };
 
 const getDefaultBlogInfo = () => ({
@@ -58,7 +49,6 @@ const saveToGist = async (xmlContent: string): Promise<void> => {
     throw new Error("GitHub token not configured");
   }
 
-  const gistId = getGistId();
   const gistData = {
     description: "Blog Posts Backup",
     public: false,
@@ -67,12 +57,12 @@ const saveToGist = async (xmlContent: string): Promise<void> => {
     },
   };
 
-  const url = gistId
-    ? `https://api.github.com/gists/${gistId}`
+  const url = GIST_ID
+    ? `https://api.github.com/gists/${GIST_ID}`
     : "https://api.github.com/gists";
 
   const response = await fetch(url, {
-    method: gistId ? "PATCH" : "POST",
+    method: GIST_ID ? "PATCH" : "POST",
     headers: {
       Authorization: `token ${GITHUB_TOKEN}`,
       "Content-Type": "application/json",
@@ -84,20 +74,14 @@ const saveToGist = async (xmlContent: string): Promise<void> => {
   if (!response.ok) {
     throw new Error(`Gist save failed: ${response.statusText}`);
   }
-
-  if (!gistId) {
-    const data = await response.json();
-    setGistId(data.id);
-  }
 };
 
 const loadFromGist = async (): Promise<string> => {
-  const gistId = getGistId();
-  if (!GITHUB_TOKEN || !gistId) {
+  if (!GITHUB_TOKEN || !GIST_ID) {
     throw new Error("GitHub token or Gist ID not configured");
   }
 
-  const response = await fetch(`https://api.github.com/gists/${gistId}`, {
+  const response = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
     headers: { Authorization: `token ${GITHUB_TOKEN}` },
   });
 
