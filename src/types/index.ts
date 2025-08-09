@@ -32,6 +32,7 @@ export interface BlogInfo {
     firstName: string;
     lastName: string;
   }>;
+  followedFeeds?: string[];
 }
 
 export interface BlogData {

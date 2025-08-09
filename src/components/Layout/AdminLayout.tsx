@@ -9,6 +9,7 @@ import {
   BarChartOutlined,
   FileTextOutlined,
   TagOutlined,
+  LinkOutlined,
 } from "@ant-design/icons";
 
 const { Sider, Content } = Layout;
@@ -34,6 +35,11 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   }
 
   const menuItems = [
+    {
+      key: "/admin/feed",
+      icon: <LinkOutlined size={16} />,
+      label: <Link to="/admin/feed">Feed</Link>,
+    },
     {
       key: "/admin",
       icon: <BarChartOutlined size={16} />,
@@ -73,6 +79,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
           <Menu
             mode="inline"
             selectedKeys={[location.pathname]}
+            defaultSelectedKeys={["/admin/feed"]}
             className="border-none mt-4"
             items={menuItems}
           />

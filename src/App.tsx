@@ -18,6 +18,7 @@ import { AdminLogin } from "./pages/Admin/Login";
 import { Dashboard } from "./pages/Admin/Dashboard";
 import { PostList } from "./pages/Admin/Posts/PostList";
 import { PostEditor } from "./pages/Admin/Posts/PostEditor";
+import FollowedFeed from "./pages/Admin/FollowedFeed";
 
 const antTheme = {
   token: {
@@ -140,6 +141,15 @@ function App() {
                       Settings panel will be implemented here.
                     </p>
                   </div>
+                </AdminLayout>
+              }
+            />
+
+            <Route
+              path="/admin/feed"
+              element={
+                <AdminLayout>
+                  <FollowedFeed />
                 </AdminLayout>
               }
             />

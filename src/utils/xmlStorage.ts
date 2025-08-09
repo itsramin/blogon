@@ -1,4 +1,4 @@
-import { BlogData, BlogPost, Category, Tag } from "../types";
+import { BlogData, BlogInfo, BlogPost, Category, Tag } from "../types";
 
 // GitHub Gist Configuration
 const GITHUB_TOKEN = import.meta.env.VITE_GITHUB_TOKEN;
@@ -398,6 +398,11 @@ export const xmlStorage = {
     }
     return [...this.privateCache.tags];
   },
+
+  async getBlogInfo(): Promise<BlogInfo> {
+    await this.initialize();
+    return getDefaultBlogInfo();
+  },
   async addPostsFromXML(xmlString: string): Promise<void> {
     try {
       const parsedData = await this.importFromXML(xmlString);
@@ -440,6 +445,178 @@ export const xmlStorage = {
       await saveToGist(xml);
     } catch (error) {
       console.error("Failed to add posts from XML:", error);
+      throw error;
+    }
+  },
+  // Add to xmlStorage object
+  async generateRSSFeed(): Promise<string> {
+    await this.initialize();
+    const publishedPosts = await this.getPublishedPosts();
+
+    let rss = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+<channel>
+  <title>${getDefaultBlogInfo().title}</title>
+  <link>${getDefaultBlogInfo().domain}</link>
+  <description>${getDefaultBlogInfo().shortDescription}</description>
+  <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
+`;
+
+    publishedPosts.forEach((post) => {
+      rss += `
+  <item>
+    <title>${this.escapeXml(post.title)}</title>
+    <link>${post.link}</link>
+    <guid>${post.id}</guid>
+    <pubDate>${new Date(post.createdAt).toUTCString()}</pubDate>
+    <description><![CDATA[${post.content.substring(0, 200)}...]]></description>
+    <author>${post.author.userName}</author>
+  </item>`;
+    });
+
+    rss += `
+</channel>
+</rss>`;
+    return rss;
+  },
+  async updateBlogInfo(updates: Partial<BlogInfo>): Promise<void> {
+    await this.initialize();
+
+    // Get current blog info from XML or defaults
+    let currentInfo: BlogInfo;
+    try {
+      const xmlString = await loadFromGist();
+      const data = await this.importFromXML(xmlString);
+      currentInfo = data.blogInfo;
+    } catch (error) {
+      console.error("Failed to load current blog info, using defaults", error);
+      currentInfo = getDefaultBlogInfo();
+    }
+
+    // Merge updates with current info
+    const updatedInfo = { ...currentInfo, ...updates };
+
+    // Update the private cache
+    const updatedPosts = this.privateCache.posts.map((post) => {
+      // Update author info if owner info changed
+      if (post.author.userName === currentInfo.owner.userName) {
+        return {
+          ...post,
+          author: {
+            ...post.author,
+            userName: updatedInfo.owner.userName,
+            firstName: updatedInfo.owner.firstName,
+            lastName: updatedInfo.owner.lastName,
+          },
+        };
+      }
+      return post;
+    });
+
+    this.privateCache.posts = updatedPosts;
+
+    // Generate new XML with updated info
+    let xml = `<?xml version="1.0" encoding="UTF-8"?>
+<BLOG_DATA>
+  <BLOG_INFO>
+    <DOMAIN>${updatedInfo.domain}</DOMAIN>
+    <TITLE>${this.escapeXml(updatedInfo.title)}</TITLE>
+    <SHORT_DESCRIPTION>${this.escapeXml(
+      updatedInfo.shortDescription
+    )}</SHORT_DESCRIPTION>
+    <FULL_DESCRIPTION>${this.escapeXml(
+      updatedInfo.fullDescription
+    )}</FULL_DESCRIPTION>
+    <OWNER>
+      <USER>
+        <USER_NAME>${updatedInfo.owner.userName}</USER_NAME>
+        <FIRST_NAME>${updatedInfo.owner.firstName}</FIRST_NAME>
+        <LAST_NAME>${updatedInfo.owner.lastName}</LAST_NAME>
+      </USER>
+    </OWNER>`;
+
+    // Add authors if they exist
+    if (updatedInfo.authors && updatedInfo.authors.length > 0) {
+      xml += `
+    <AUTHORS>`;
+      updatedInfo.authors.forEach((author) => {
+        xml += `
+      <USER>
+        <USER_NAME>${author.userName}</USER_NAME>
+        <FIRST_NAME>${author.firstName}</FIRST_NAME>
+        <LAST_NAME>${author.lastName}</LAST_NAME>
+      </USER>`;
+      });
+      xml += `
+    </AUTHORS>`;
+    }
+
+    // Add followed feeds if they exist
+    if (updatedInfo.followedFeeds && updatedInfo.followedFeeds.length > 0) {
+      xml += `
+    <FOLLOWED_FEEDS>`;
+      updatedInfo.followedFeeds.forEach((feed) => {
+        xml += `
+      <FEED>${this.escapeXml(feed)}</FEED>`;
+      });
+      xml += `
+    </FOLLOWED_FEEDS>`;
+    }
+
+    xml += `
+  </BLOG_INFO>
+  <POSTS>`;
+
+    // Add posts
+    this.privateCache.posts.forEach((post) => {
+      xml += `
+    <POST>
+      <NUMBER>${post.number}</NUMBER>
+      <TITLE>${this.escapeXml(post.title)}</TITLE>
+      <CONTENT><![CDATA[${post.content}]]></CONTENT>
+      <AUTHOR>
+        <USER_NAME>${post.author.userName}</USER_NAME>
+        <FIRST_NAME>${post.author.firstName}</FIRST_NAME>
+        <LAST_NAME>${post.author.lastName}</LAST_NAME>
+      </AUTHOR>
+      <CREATED_DATE>${post.createdAt}</CREATED_DATE>
+      <LAST_MODIFIED_DATE>${post.updatedAt}</LAST_MODIFIED_DATE>
+      <STATUS>${post.status}</STATUS>
+      <URL>${post.url}</URL>
+      <LINK>${post.link}</LINK>
+      <CATEGORIES>`;
+
+      post.categories.forEach((category) => {
+        xml += `
+        <CATEGORY>
+          <NAME>${this.escapeXml(category)}</NAME>
+        </CATEGORY>`;
+      });
+
+      xml += `
+      </CATEGORIES>
+      <TAGS>`;
+
+      post.tags.forEach((tag) => {
+        xml += `
+        <TAG>
+          <NAME>${this.escapeXml(tag)}</NAME>
+        </TAG>`;
+      });
+
+      xml += `
+      </TAGS>
+    </POST>`;
+    });
+
+    xml += `
+  </POSTS>
+</BLOG_DATA>`;
+
+    try {
+      await saveToGist(xml);
+    } catch (error) {
+      console.error("Failed to save updated blog info:", error);
       throw error;
     }
   },
