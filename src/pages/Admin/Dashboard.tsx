@@ -1,17 +1,29 @@
-import React, { useEffect, useState } from 'react';
-import { Card, Row, Col, Statistic, List, Typography, Tag, Button } from 'antd';
-import { Link } from 'react-router-dom';
-import { xmlStorage } from '../../utils/xmlStorage';
-import { BlogPost } from '../../types';
+import React, { useEffect, useState } from "react";
+import {
+  Card,
+  Row,
+  Col,
+  Statistic,
+  List,
+  Typography,
+  Tag,
+  Button,
+  message,
+  Upload,
+} from "antd";
+import { Link } from "react-router-dom";
+import { xmlStorage } from "../../utils/xmlStorage";
+import { BlogPost } from "../../types";
 
 import {
   CalendarOutlined,
   EditOutlined,
   EyeOutlined,
- FileTextOutlined,
- LineChartOutlined
+  FileTextOutlined,
+  LineChartOutlined,
+  UploadOutlined,
 } from "@ant-design/icons";
-import { format } from 'date-fns';
+import { format } from "date-fns";
 
 const { Title } = Typography;
 
@@ -30,9 +42,11 @@ export const Dashboard: React.FC = () => {
 
   const loadDashboardData = async () => {
     const allPosts = await xmlStorage.getAllPosts();
-    const publishedPosts = allPosts.filter(post => post.status === 'published');
-    const draftPosts = allPosts.filter(post => post.status === 'draft');
-    
+    const publishedPosts = allPosts.filter(
+      (post) => post.status === "published"
+    );
+    const draftPosts = allPosts.filter((post) => post.status === "draft");
+
     setStats({
       totalPosts: allPosts.length,
       publishedPosts: publishedPosts.length,
@@ -42,7 +56,10 @@ export const Dashboard: React.FC = () => {
 
     // Get recent posts (last 5)
     const recent = allPosts
-      .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+      .sort(
+        (a, b) =>
+          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+      )
       .slice(0, 5);
     setRecentPosts(recent);
   };
@@ -63,16 +80,44 @@ export const Dashboard: React.FC = () => {
     </Card>
   );
 
+  const handleImport = async (file: File) => {
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      try {
+        const content = e.target?.result as string;
+        await xmlStorage.importFromXML(content);
+        message.success("Posts imported successfully!");
+        loadDashboardData();
+      } catch (error) {
+        message.error("Failed to import posts");
+        console.error(error);
+      }
+    };
+    reader.readAsText(file);
+    return false; // Prevent default upload behavior
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <Title level={2} className="mb-0">Dashboard</Title>
-        <Button type="primary" size="large">
-          <Link to="/admin/posts/new" className="text-white">
-            <FileTextOutlined size={16} className="mr-2" />
-            New Post
-          </Link>
-        </Button>
+        <Title level={2} className="mb-0">
+          Dashboard
+        </Title>
+        <div className="flex space-x-2">
+          <Upload
+            accept=".xml"
+            beforeUpload={handleImport}
+            showUploadList={false}
+          >
+            <Button icon={<UploadOutlined />}>Import XML</Button>
+          </Upload>
+          <Button type="primary" size="large">
+            <Link to="/admin/posts/new" className="text-white">
+              <FileTextOutlined size={16} className="mr-2" />
+              New Post
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <Row gutter={[16, 16]}>
@@ -124,19 +169,23 @@ export const Dashboard: React.FC = () => {
                         <EditOutlined size={14} />
                         Edit
                       </Button>
-                    </Link>
+                    </Link>,
                   ]}
                 >
                   <List.Item.Meta
                     title={
                       <div className="flex items-center space-x-2">
-                        <Link 
+                        <Link
                           to={`/admin/posts/edit/${post.id}`}
                           className="text-gray-800 hover:text-blue-600"
                         >
                           {post.title}
                         </Link>
-                        <Tag color={post.status === 'published' ? 'green' : 'orange'}>
+                        <Tag
+                          color={
+                            post.status === "published" ? "green" : "orange"
+                          }
+                        >
                           {post.status}
                         </Tag>
                       </div>
@@ -145,11 +194,16 @@ export const Dashboard: React.FC = () => {
                       <div className="flex items-center space-x-4 text-sm text-gray-500">
                         <span className="flex items-center">
                           <CalendarOutlined size={14} className="mr-1" />
-                          {format(new Date(post.updatedAt), 'MMM d, yyyy')}
+                          {format(new Date(post.updatedAt), "MMM d, yyyy")}
                         </span>
-                        <span>by {post.author}</span>
+                        <span>
+                          by {post.author.firstName} {post.author.lastName}
+                        </span>
                         {post.categories.length > 0 && (
-                          <span>in {post.categories.join(', ')}</span>
+                          <span>in {post.categories.join(", ")}</span>
+                        )}
+                        {post.tags.length > 0 && (
+                          <span>tags: {post.tags.join(", ")}</span>
                         )}
                       </div>
                     }
@@ -159,7 +213,7 @@ export const Dashboard: React.FC = () => {
             />
           </Card>
         </Col>
-        
+
         <Col xs={24} lg={8}>
           <Card title="Quick Actions" className="shadow-sm">
             <div className="space-y-3">

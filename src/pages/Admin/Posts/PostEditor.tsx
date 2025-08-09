@@ -22,7 +22,6 @@ import {
 } from "@ant-design/icons";
 
 const { Title } = Typography;
-const { TextArea } = Input;
 
 export const PostEditor: React.FC = () => {
   const [form] = Form.useForm();
@@ -59,20 +58,23 @@ export const PostEditor: React.FC = () => {
           setContent(post.content);
           form.setFieldsValue({
             title: post.title,
-            slug: post.slug,
-            author: post.author,
+            url: post.url, // Changed from slug to url
+            author: {
+              firstName: post.author.firstName,
+              lastName: post.author.lastName,
+            },
             categories: post.categories,
             tags: post.tags,
-            excerpt: post.excerpt,
-            metaTitle: post.metaTitle,
-            metaDescription: post.metaDescription,
             status: post.status,
           });
         }
       } else {
         // Set defaults for new post
         form.setFieldsValue({
-          author: "Admin",
+          author: {
+            firstName: "Admin",
+            lastName: "",
+          },
           status: "draft",
         });
       }
@@ -83,9 +85,9 @@ export const PostEditor: React.FC = () => {
     setLoading(false);
   };
 
-  const generateSlugFromTitle = (title: string) => {
+  const generateUrlFromTitle = (title: string) => {
     if (title) {
-      form.setFieldValue("slug", createSlug(title));
+      form.setFieldValue("url", createSlug(title));
     }
   };
 
@@ -93,24 +95,31 @@ export const PostEditor: React.FC = () => {
     setLoading(true);
 
     try {
+      const authorValue = values.author || {};
       const postData: BlogPost = {
         id: id === "new" ? generateId() : id!,
         title: values.title,
         content,
-        author: values.author,
-        slug: values.slug,
+        author: {
+          userName: createSlug(
+            `${authorValue.firstName} ${authorValue.lastName}`
+          ),
+          firstName: authorValue.firstName || "",
+          lastName: authorValue.lastName || "",
+        },
+        url: values.url, // Changed from slug to url
+        link: `${window.location.origin}/post/${values.url}`, // Generate link
+        number: isEditing
+          ? (await xmlStorage.getPostById(id!))?.number || Date.now()
+          : Date.now(),
         categories: values.categories || [],
         tags: values.tags || [],
-        excerpt: values.excerpt,
-        metaTitle: values.metaTitle,
-        metaDescription: values.metaDescription,
         status: publish ? "published" : values.status,
         createdAt: isEditing
           ? (await xmlStorage.getPostById(id!))?.createdAt ||
             new Date().toISOString()
           : new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        publishedAt: publish ? new Date().toISOString() : undefined,
       };
 
       await xmlStorage.savePost(postData);
@@ -130,8 +139,8 @@ export const PostEditor: React.FC = () => {
 
   const handlePreview = () => {
     const values = form.getFieldsValue();
-    if (values.slug) {
-      window.open(`/post/${values.slug}`, "_blank");
+    if (values.url) {
+      window.open(`/post/${values.url}`, "_blank");
     } else {
       message.warning("Please save the post first to preview it");
     }
@@ -194,20 +203,16 @@ export const PostEditor: React.FC = () => {
                 <Input
                   size="large"
                   placeholder="Enter post title"
-                  onBlur={(e) => generateSlugFromTitle(e.target.value)}
+                  onBlur={(e) => generateUrlFromTitle(e.target.value)}
                 />
               </Form.Item>
 
               <Form.Item
-                name="slug"
-                label="Slug"
-                rules={[{ required: true, message: "Please enter a slug" }]}
+                name="url"
+                label="URL"
+                rules={[{ required: true, message: "Please enter a URL" }]}
               >
-                <Input
-                  size="large"
-                  placeholder="post-url-slug"
-                  addonBefore="/"
-                />
+                <Input size="large" placeholder="post-url" />
               </Form.Item>
 
               <Form.Item label="Content" required>
@@ -217,26 +222,23 @@ export const PostEditor: React.FC = () => {
                   placeholder="Start writing your post content..."
                 />
               </Form.Item>
-
-              <Form.Item name="excerpt" label="Excerpt">
-                <TextArea
-                  rows={3}
-                  placeholder="Brief description of the post (optional)"
-                />
-              </Form.Item>
             </Card>
           </Col>
 
           <Col xs={24} lg={8}>
             <Card title="Post Settings" className="shadow-sm mb-6">
               <Form.Item
-                name="author"
-                label="Author"
+                name={["author", "firstName"]}
+                label="Author First Name"
                 rules={[
-                  { required: true, message: "Please enter author name" },
+                  { required: true, message: "Please enter author first name" },
                 ]}
               >
-                <Input placeholder="Author name" />
+                <Input placeholder="First name" />
+              </Form.Item>
+
+              <Form.Item name={["author", "lastName"]} label="Author Last Name">
+                <Input placeholder="Last name" />
               </Form.Item>
 
               <Form.Item name="status" label="Status">
@@ -266,16 +268,6 @@ export const PostEditor: React.FC = () => {
                     label: tag.name,
                   }))}
                 />
-              </Form.Item>
-            </Card>
-
-            <Card title="SEO Settings" className="shadow-sm">
-              <Form.Item name="metaTitle" label="Meta Title">
-                <Input placeholder="SEO title (optional)" />
-              </Form.Item>
-
-              <Form.Item name="metaDescription" label="Meta Description">
-                <TextArea rows={3} placeholder="SEO description (optional)" />
               </Form.Item>
             </Card>
           </Col>

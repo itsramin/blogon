@@ -85,7 +85,8 @@ export const PostList: React.FC = () => {
           >
             {title}
           </Link>
-          <div className="text-sm text-gray-500 mt-1">/{record.slug}</div>
+          <div className="text-sm text-gray-500 mt-1">/{record.url}</div>{" "}
+          {/* Changed from slug to url */}
         </div>
       ),
     },
@@ -105,7 +106,9 @@ export const PostList: React.FC = () => {
       dataIndex: "categories",
       key: "categories",
       width: 200,
-      render: (categories: string[]) => (
+      render: (
+        categories: string[] = [] // Added default value
+      ) => (
         <div>
           {categories.map((category) => (
             <Tag key={category} color="blue" className="mb-1">
@@ -119,7 +122,10 @@ export const PostList: React.FC = () => {
       title: "Author",
       dataIndex: "author",
       key: "author",
-      width: 120,
+      width: 150,
+      render: (
+        author: { firstName: string; lastName: string } // Updated author display
+      ) => `${author.firstName} ${author.lastName}`,
     },
     {
       title: "Updated",
@@ -139,7 +145,7 @@ export const PostList: React.FC = () => {
               type="text"
               size="small"
               icon={<EyeOutlined size={14} />}
-              onClick={() => window.open(`/post/${record.slug}`, "_blank")}
+              onClick={() => window.open(`/post/${record.url}`, "_blank")} // Changed from slug to url
               title="View Post"
             />
           )}

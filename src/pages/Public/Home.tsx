@@ -52,7 +52,7 @@ export const Home: React.FC = () => {
   );
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-16">
       {/* Search and Filters */}
       <Card className="shadow-sm mb-8">
         <div className="flex flex-col sm:flex-row gap-4">
@@ -96,7 +96,7 @@ export const Home: React.FC = () => {
         </div>
       ) : (
         <>
-          <div className="flex-col gap-y-2">
+          <div className="flex flex-col gap-y-6">
             {paginatedPosts.map((post) => (
               <PostCard post={post} />
             ))}

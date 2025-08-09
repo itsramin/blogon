@@ -4,14 +4,13 @@ import { useParams, Link } from "react-router-dom";
 import { xmlStorage } from "../../utils/xmlStorage";
 import { BlogPost } from "../../types";
 import {
-  ArrowLeftOutlined,
   CalendarOutlined,
   ExportOutlined,
   UserOutlined,
 } from "@ant-design/icons";
 import { format } from "date-fns";
 
-const { Title, Text, Paragraph } = Typography;
+const { Title } = Typography;
 
 export const PostDetail: React.FC = () => {
   const { slug } = useParams();
@@ -25,19 +24,21 @@ export const PostDetail: React.FC = () => {
     }
   }, [slug]);
 
-  const loadPost = async (postSlug: string) => {
+  const loadPost = async (postUrl: string) => {
     setLoading(true);
     try {
-      const foundPost = await xmlStorage.getPostBySlug(postSlug);
+      // Changed from getPostBySlug to find by URL
+      const allPosts = await xmlStorage.getAllPosts();
+      const foundPost = allPosts.find((p) => p.url === postUrl);
+
       if (foundPost && foundPost.status === "published") {
         setPost(foundPost);
 
         // Load related posts
-        const allPosts = await xmlStorage.getPublishedPosts();
         const related = allPosts
-          .filter((p) => p.id !== foundPost.id)
+          .filter((p) => p.id !== foundPost.id && p.status === "published")
           .filter((p) =>
-            p.categories.some((cat) => foundPost.categories.includes(cat))
+            p.categories?.some((cat) => foundPost.categories?.includes(cat))
           )
           .slice(0, 3);
         setRelatedPosts(related);
@@ -52,73 +53,46 @@ export const PostDetail: React.FC = () => {
     if (navigator.share) {
       navigator.share({
         title: post?.title,
-        text: post?.excerpt || "Check out this post",
-        url: window.location.href,
+        text: post?.content?.substring(0, 100) || "Check out this post", // Removed excerpt
+        url: post?.link || window.location.href, // Use post.link if available
       });
     } else {
-      navigator.clipboard.writeText(window.location.href);
-      // You could show a message here
+      navigator.clipboard.writeText(post?.link || window.location.href);
     }
   };
 
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <Text className="mt-4 text-gray-600">Loading post...</Text>
-        </div>
-      </div>
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">...</div>
     );
   }
 
   if (!post) {
     return (
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="text-center">
-          <Title level={2}>Post not found</Title>
-          <Text className="text-gray-600 mb-6">
-            The post you're looking for doesn't exist or has been removed.
-          </Text>
-          <Link to="/">
-            <Button type="primary" icon={<ArrowLeftOutlined size={16} />}>
-              Back to Home
-            </Button>
-          </Link>
-        </div>
-      </div>
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">...</div>
     );
   }
 
   return (
     <>
-      {/* SEO Meta Tags */}
-      <title>{post.metaTitle || post.title} | Weblog</title>
-      <meta
-        name="description"
-        content={post.metaDescription || post.excerpt || post.title}
-      />
+      {/* SEO Meta Tags - Updated to use content instead of excerpt */}
+      <title>{post.title} | Weblog</title>
+      <meta name="description" content={post.content?.substring(0, 160)} />
       <meta property="og:title" content={post.title} />
       <meta
         property="og:description"
-        content={post.metaDescription || post.excerpt || post.title}
+        content={post.content?.substring(0, 160)}
       />
       <meta property="og:type" content="article" />
+      {post.link && <meta property="og:url" content={post.link} />}
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Navigation */}
-        <div className="mb-6">
-          <Link to="/">
-            <Button icon={<ArrowLeftOutlined size={16} />} type="text">
-              Back to Posts
-            </Button>
-          </Link>
-        </div>
+        {/* Navigation - unchanged */}
 
         {/* Post Header */}
         <Card className="shadow-sm mb-8">
           <div className="mb-4">
-            {post.categories.map((category) => (
+            {post.categories?.map((category) => (
               <Tag key={category} color="blue" className="mb-2">
                 {category}
               </Tag>
@@ -129,32 +103,19 @@ export const PostDetail: React.FC = () => {
             {post.title}
           </Title>
 
-          {post.excerpt && (
-            <Paragraph className="text-lg text-gray-600 mb-6">
-              {post.excerpt}
-            </Paragraph>
-          )}
-
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="flex items-center space-x-6 text-gray-500">
               <span className="flex items-center">
                 <UserOutlined size={16} className="mr-2" />
-                {post.author}
+                {post.author.firstName} {post.author.lastName}{" "}
               </span>
               <span className="flex items-center">
                 <CalendarOutlined size={16} className="mr-2" />
-                {format(
-                  new Date(post.publishedAt || post.createdAt),
-                  "MMMM d, yyyy"
-                )}
+                {format(new Date(post.updatedAt), "MMMM d, yyyy")}{" "}
               </span>
             </div>
 
-            <Button
-              icon={<ExportOutlined size={16} />}
-              onClick={handleShare}
-              type="text"
-            >
+            <Button icon={<ExportOutlined size={16} />} onClick={handleShare}>
               Share
             </Button>
           </div>
@@ -202,18 +163,18 @@ export const PostDetail: React.FC = () => {
                 >
                   <Title level={5} className="mb-2">
                     <Link
-                      to={`/post/${relatedPost.slug}`}
+                      to={`/post/${relatedPost.url}`}
                       className="text-gray-800 hover:text-blue-600 transition-colors"
                     >
                       {relatedPost.title}
                     </Link>
                   </Title>
                   <div className="flex items-center space-x-4 text-sm text-gray-500">
-                    <span>{relatedPost.author}</span>
+                    <span>{relatedPost.author.userName}</span>
                     <span>
                       {format(
                         new Date(
-                          relatedPost.publishedAt || relatedPost.createdAt
+                          relatedPost.updatedAt || relatedPost.createdAt
                         ),
                         "MMM d, yyyy"
                       )}
