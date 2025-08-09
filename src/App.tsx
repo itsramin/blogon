@@ -18,16 +18,12 @@ import { AdminLogin } from "./pages/Admin/Login";
 import { Dashboard } from "./pages/Admin/Dashboard";
 import { PostList } from "./pages/Admin/Posts/PostList";
 import { PostEditor } from "./pages/Admin/Posts/PostEditor";
+import { xmlStorage } from "./utils/xmlStorage";
 
 const antTheme = {
   token: {
     colorPrimary: "#1890FF",
     colorSuccess: "#52C41A",
-    colorInfo: "#1890FF",
-    colorWarning: "#FAAD14",
-    colorError: "#FF4D4F",
-    colorTextBase: "#262626",
-    colorBgBase: "#FFFFFF",
     borderRadius: 6,
     fontSize: 14,
     fontFamily:
@@ -36,6 +32,8 @@ const antTheme = {
 };
 
 function App() {
+  // Initialize when loaded
+  xmlStorage.initialize().catch(console.error);
   return (
     <ConfigProvider theme={antTheme}>
       <AuthProvider>
