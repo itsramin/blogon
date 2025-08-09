@@ -1,4 +1,3 @@
-import React from "react";
 import { Layout, Button, Avatar, Dropdown } from "antd";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
@@ -6,7 +5,6 @@ import {
   SettingOutlined,
   UserOutlined,
   LogoutOutlined,
-  BookOutlined,
 } from "@ant-design/icons";
 
 const { Header: AntHeader } = Layout;
@@ -53,12 +51,12 @@ export const Header: React.FC = () => {
             to="/admin"
             className="flex items-center space-x-2 text-xl font-bold text-gray-800"
           >
-            <BookOutlined className="text-blue-600" size={24} />
             <span>Weblog Admin</span>
           </Link>
         </div>
 
         <div className="flex items-center space-x-4">
+          {isAuthenticated && user && <Link to={"/"}>Visit weblog</Link>}
           {isAuthenticated && user && (
             <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
               <Button type="text" className="flex items-center space-x-2">
@@ -81,7 +79,6 @@ export const Header: React.FC = () => {
           to="/"
           className="flex items-center space-x-2 text-xl font-bold text-gray-800"
         >
-          <BookOutlined className="text-blue-600" size={24} />
           <span>My Weblog</span>
         </Link>
 
