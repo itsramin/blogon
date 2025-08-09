@@ -398,6 +398,51 @@ export const xmlStorage = {
     }
     return [...this.privateCache.tags];
   },
+  async addPostsFromXML(xmlString: string): Promise<void> {
+    try {
+      const parsedData = await this.importFromXML(xmlString);
+      const existingPostNumbers = new Set(
+        this.privateCache.posts.map((p) => p.number)
+      );
+
+      // Only add posts that don't already exist (based on number or ID)
+      const newPosts = parsedData.posts.filter(
+        (post) => !existingPostNumbers.has(post.number)
+      );
+
+      this.privateCache.posts = [...this.privateCache.posts, ...newPosts];
+
+      // Update categories and tags
+      newPosts.forEach((post) => {
+        post.categories.forEach((category) => {
+          if (!this.privateCache.categories.some((c) => c.name === category)) {
+            this.privateCache.categories.push({
+              id: generateId(),
+              name: category,
+              slug: createSlug(category),
+            });
+          }
+        });
+
+        post.tags.forEach((tag) => {
+          if (!this.privateCache.tags.some((t) => t.name === tag)) {
+            this.privateCache.tags.push({
+              id: generateId(),
+              name: tag,
+              slug: createSlug(tag),
+            });
+          }
+        });
+      });
+
+      // Save to Gist
+      const xml = await this.exportToXML();
+      await saveToGist(xml);
+    } catch (error) {
+      console.error("Failed to add posts from XML:", error);
+      throw error;
+    }
+  },
 
   escapeXml(unsafe: string): string {
     return unsafe.replace(/[<>&'"]/g, (c) => {

@@ -85,8 +85,8 @@ export const Dashboard: React.FC = () => {
     reader.onload = async (e) => {
       try {
         const content = e.target?.result as string;
-        await xmlStorage.importFromXML(content);
-        message.success("Posts imported successfully!");
+        await xmlStorage.addPostsFromXML(content);
+        message.success("Posts imported and added successfully!");
         loadDashboardData();
       } catch (error) {
         message.error("Failed to import posts");
@@ -94,7 +94,7 @@ export const Dashboard: React.FC = () => {
       }
     };
     reader.readAsText(file);
-    return false; // Prevent default upload behavior
+    return false;
   };
 
   return (
