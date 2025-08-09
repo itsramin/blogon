@@ -1,5 +1,5 @@
 {
-  "name": "weblog-platform",
+  "name": "blogon",
   "private": true,
   "version": "1.0.0",
   "description": "Professional React-based weblog platform with admin dashboard",

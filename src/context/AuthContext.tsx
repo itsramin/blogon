@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { AuthState, User } from '../types';
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { AuthState, User } from "../types";
 
 interface AuthContextType extends AuthState {
   login: (username: string, password: string) => Promise<boolean>;
@@ -11,71 +11,79 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };
 
 const DEMO_USER: User = {
-  id: '1',
-  username: 'admin',
-  email: 'admin@weblog.com',
-  role: 'admin'
+  id: "1",
+  username: "admin",
+  email: "admin@weblog.com",
+  role: "admin",
 };
 
 // Demo credentials - in production, this would be environment variables
 const ADMIN_CREDENTIALS = {
-  username: 'admin',
-  password: 'admin123'
+  username: import.meta.env.VITE_ADMIN_USERNAME,
+  password: import.meta.env.VITE_ADMIN_PASSWORD,
 };
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [authState, setAuthState] = useState<AuthState>({
     isAuthenticated: false,
     user: null,
-    loading: true
+    loading: true,
   });
 
   useEffect(() => {
     // Check if user is already logged in
-    const token = localStorage.getItem('weblog_auth_token');
+    const token = localStorage.getItem("weblog_auth_token");
     if (token) {
       setAuthState({
         isAuthenticated: true,
         user: DEMO_USER,
-        loading: false
+        loading: false,
       });
     } else {
-      setAuthState(prev => ({ ...prev, loading: false }));
+      setAuthState((prev) => ({ ...prev, loading: false }));
     }
   }, []);
 
-  const login = async (username: string, password: string): Promise<boolean> => {
-    setAuthState(prev => ({ ...prev, loading: true }));
-    
+  const login = async (
+    username: string,
+    password: string
+  ): Promise<boolean> => {
+    setAuthState((prev) => ({ ...prev, loading: true }));
+
     // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
-      localStorage.setItem('weblog_auth_token', 'demo_token_123');
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    if (
+      username === ADMIN_CREDENTIALS.username &&
+      password === ADMIN_CREDENTIALS.password
+    ) {
+      localStorage.setItem("weblog_auth_token", "demo_token_123");
       setAuthState({
         isAuthenticated: true,
         user: DEMO_USER,
-        loading: false
+        loading: false,
       });
       return true;
     } else {
-      setAuthState(prev => ({ ...prev, loading: false }));
+      setAuthState((prev) => ({ ...prev, loading: false }));
       return false;
     }
   };
 
   const logout = () => {
-    localStorage.removeItem('weblog_auth_token');
+    localStorage.removeItem("weblog_auth_token");
     setAuthState({
       isAuthenticated: false,
       user: null,
-      loading: false
+      loading: false,
     });
   };
 

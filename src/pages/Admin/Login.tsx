@@ -60,16 +60,6 @@ export const AdminLogin: React.FC = () => {
               <Alert message={error} type="error" showIcon className="mb-4" />
             )}
 
-            <div className="mb-4 p-4 bg-blue-50 rounded-lg">
-              <Text strong className="text-blue-800">
-                Demo Credentials:
-              </Text>
-              <br />
-              <Text className="text-blue-700">Username: admin</Text>
-              <br />
-              <Text className="text-blue-700">Password: admin123</Text>
-            </div>
-
             <Form.Item
               name="username"
               label="Username"

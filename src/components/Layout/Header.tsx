@@ -1,5 +1,5 @@
 import React from "react";
-import { Layout, Menu, Button, Avatar, Dropdown } from "antd";
+import { Layout, Button, Avatar, Dropdown } from "antd";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import {
@@ -74,13 +74,6 @@ export const Header: React.FC = () => {
     );
   }
 
-  const publicMenuItems = [
-    { key: "/", label: "Home" },
-    { key: "/categories", label: "Categories" },
-    { key: "/tags", label: "Tags" },
-    { key: "/about", label: "About" },
-  ];
-
   return (
     <AntHeader className="bg-white border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-full">
@@ -91,16 +84,6 @@ export const Header: React.FC = () => {
           <BookOutlined className="text-blue-600" size={24} />
           <span>Weblog</span>
         </Link>
-
-        <Menu
-          mode="horizontal"
-          selectedKeys={[location.pathname]}
-          className="border-none flex-1 justify-center"
-          items={publicMenuItems.map((item) => ({
-            key: item.key,
-            label: <Link to={item.key}>{item.label}</Link>,
-          }))}
-        />
 
         <div className="flex items-center space-x-4">
           {isAuthenticated ? (
