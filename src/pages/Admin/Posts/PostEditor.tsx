@@ -10,6 +10,7 @@ import {
   Typography,
   Row,
   Col,
+  Spin,
 } from "antd";
 import { useNavigate, useParams } from "react-router-dom";
 import { xmlStorage, generateId, createSlug } from "../../../utils/xmlStorage";
@@ -32,16 +33,26 @@ export const PostEditor: React.FC = () => {
   const [tags, setTags] = useState<Tag[]>([]);
   const [content, setContent] = useState("");
   const [isEditing, setIsEditing] = useState(false);
+  const [initializing, setInitializing] = useState(true);
 
   useEffect(() => {
-    loadData();
+    const initialize = async () => {
+      try {
+        await xmlStorage.initialize();
+        setInitializing(false);
+        loadData();
+      } catch (error) {
+        message.error("Failed to initialize storage");
+        setInitializing(false);
+      }
+    };
+    initialize();
   }, [id]);
 
   const loadData = async () => {
     setLoading(true);
-
     try {
-      // Load categories and tags
+      await xmlStorage.initialize();
       const [allCategories, allTags] = await Promise.all([
         xmlStorage.getAllCategories(),
         xmlStorage.getAllTags(),
@@ -50,7 +61,6 @@ export const PostEditor: React.FC = () => {
       setCategories(allCategories);
       setTags(allTags);
 
-      // Load post if editing
       if (id && id !== "new") {
         const post = await xmlStorage.getPostById(id);
         if (post) {
@@ -58,7 +68,7 @@ export const PostEditor: React.FC = () => {
           setContent(post.content);
           form.setFieldsValue({
             title: post.title,
-            url: post.url, // Changed from slug to url
+            url: post.url,
             author: {
               firstName: post.author.firstName,
               lastName: post.author.lastName,
@@ -69,7 +79,6 @@ export const PostEditor: React.FC = () => {
           });
         }
       } else {
-        // Set defaults for new post
         form.setFieldsValue({
           author: {
             firstName: "Admin",
@@ -81,7 +90,6 @@ export const PostEditor: React.FC = () => {
     } catch (error) {
       message.error("Failed to load data");
     }
-
     setLoading(false);
   };
 
@@ -93,7 +101,6 @@ export const PostEditor: React.FC = () => {
 
   const handleSave = async (values: any, publish = false) => {
     setLoading(true);
-
     try {
       const authorValue = values.author || {};
       const postData: BlogPost = {
@@ -107,8 +114,8 @@ export const PostEditor: React.FC = () => {
           firstName: authorValue.firstName || "",
           lastName: authorValue.lastName || "",
         },
-        url: values.url, // Changed from slug to url
-        link: `${window.location.origin}/post/${values.url}`, // Generate link
+        url: values.url,
+        link: `/post/${values.url}`,
         number: isEditing
           ? (await xmlStorage.getPostById(id!))?.number || Date.now()
           : Date.now(),
@@ -128,12 +135,10 @@ export const PostEditor: React.FC = () => {
       if (!isEditing) {
         navigate(`/admin/posts/edit/${postData.id}`);
       }
-
       setIsEditing(true);
     } catch (error) {
       message.error(`Failed to ${publish ? "publish" : "save"} post`);
     }
-
     setLoading(false);
   };
 
@@ -146,12 +151,20 @@ export const PostEditor: React.FC = () => {
     }
   };
 
+  if (initializing) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <Spin size="large" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <Button
-            icon={<ArrowLeftOutlined size={16} />}
+            icon={<ArrowLeftOutlined />}
             onClick={() => navigate("/admin/posts")}
           >
             Back to Posts
@@ -162,12 +175,12 @@ export const PostEditor: React.FC = () => {
         </div>
 
         <Space>
-          <Button icon={<EyeOutlined size={16} />} onClick={handlePreview}>
+          <Button icon={<EyeOutlined />} onClick={handlePreview}>
             Preview
           </Button>
           <Button
             type="default"
-            icon={<SaveOutlined size={16} />}
+            icon={<SaveOutlined />}
             loading={loading}
             onClick={() => form.submit()}
           >
@@ -252,6 +265,7 @@ export const PostEditor: React.FC = () => {
                 <Select
                   mode="multiple"
                   placeholder="Select categories"
+                  loading={loading}
                   options={categories.map((cat) => ({
                     value: cat.name,
                     label: cat.name,
@@ -263,6 +277,7 @@ export const PostEditor: React.FC = () => {
                 <Select
                   mode="tags"
                   placeholder="Enter or select tags"
+                  loading={loading}
                   options={tags.map((tag) => ({
                     value: tag.name,
                     label: tag.name,

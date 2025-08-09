@@ -18,7 +18,6 @@ import { AdminLogin } from "./pages/Admin/Login";
 import { Dashboard } from "./pages/Admin/Dashboard";
 import { PostList } from "./pages/Admin/Posts/PostList";
 import { PostEditor } from "./pages/Admin/Posts/PostEditor";
-import { xmlStorage } from "./utils/xmlStorage";
 
 const antTheme = {
   token: {
@@ -32,8 +31,6 @@ const antTheme = {
 };
 
 function App() {
-  // Initialize when loaded
-  xmlStorage.initialize().catch(console.error);
   return (
     <ConfigProvider theme={antTheme}>
       <AuthProvider>

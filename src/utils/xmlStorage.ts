@@ -3,6 +3,10 @@ import { BlogData, BlogPost, Category, Tag } from "../types";
 const STORAGE_PREFIX = "weblog_";
 const STATIC_XML_PATH = "/data/posts.xml";
 
+// GitHub Gist Configuration
+const GITHUB_TOKEN = import.meta.env.VITE_GITHUB_TOKEN;
+const GIST_ID = localStorage.getItem("gistId") || "";
+
 // Helper functions
 export const generateId = (): string => {
   return Date.now().toString(36) + Math.random().toString(36).substr(2);
@@ -42,6 +46,72 @@ const getDefaultTags = (): Tag[] => [
   { id: "3", name: "Web Development", slug: "web-development" },
 ];
 
+// GitHub Gist API helpers
+const saveToGist = async (xmlContent: string): Promise<void> => {
+  if (!GITHUB_TOKEN) {
+    console.warn("No GitHub token configured - skipping Gist backup");
+    return;
+  }
+
+  const gistData = {
+    description: "Blog Posts Backup",
+    public: false,
+    files: {
+      "posts.xml": { content: xmlContent },
+    },
+  };
+
+  const url = GIST_ID
+    ? `https://api.github.com/gists/${GIST_ID}`
+    : "https://api.github.com/gists";
+
+  const response = await fetch(url, {
+    method: GIST_ID ? "PATCH" : "POST",
+    headers: {
+      Authorization: `token ${GITHUB_TOKEN}`,
+      "Content-Type": "application/json",
+      Accept: "application/vnd.github.v3+json",
+    },
+    body: JSON.stringify(gistData),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Gist save failed: ${response.statusText}`);
+  }
+
+  // Save new Gist ID if created
+  if (!GIST_ID && !localStorage.getItem("gistId")) {
+    const data = await response.json();
+    localStorage.setItem("gistId", data.id);
+  }
+};
+
+const loadFromGist = async (): Promise<string | null> => {
+  if (!GITHUB_TOKEN || !GIST_ID) return null;
+
+  try {
+    const response = await fetch(`https://api.github.com/gists/${GIST_ID}`, {
+      headers: { Authorization: `token ${GITHUB_TOKEN}` },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to load Gist: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data.files["posts.xml"].content;
+  } catch (error) {
+    console.error("Failed to load from Gist:", error);
+    return null;
+  }
+};
+
+const loadStaticXml = async (): Promise<string> => {
+  const response = await fetch(STATIC_XML_PATH);
+  if (!response.ok) throw new Error("Failed to load static XML");
+  return await response.text();
+};
+
 export const xmlStorage = {
   // In-memory cache
   privateCache: {
@@ -51,14 +121,13 @@ export const xmlStorage = {
     initialized: false,
   },
 
-  // Initialize the storage by loading the static XML
+  // Initialize storage from Gist or static XML
   async initialize(): Promise<void> {
     if (this.privateCache.initialized) return;
 
     try {
-      const response = await fetch(STATIC_XML_PATH);
-      if (!response.ok) throw new Error("Failed to load XML file");
-      const xmlString = await response.text();
+      // Try loading from Gist first
+      const xmlString = (await loadFromGist()) || (await loadStaticXml());
       const data = await this.importFromXML(xmlString);
 
       this.privateCache.posts = data.posts;
@@ -89,7 +158,10 @@ export const xmlStorage = {
 
       this.privateCache.initialized = true;
     } catch (error) {
-      console.error("Failed to initialize from XML, using defaults", error);
+      console.error(
+        "Failed to initialize from cloud storage, using defaults",
+        error
+      );
       this.privateCache.posts = [];
       this.privateCache.categories = getDefaultCategories();
       this.privateCache.tags = getDefaultTags();
@@ -303,11 +375,18 @@ export const xmlStorage = {
       this.privateCache.posts.push(postToSave);
     }
 
-    // Save to localStorage as fallback
-    localStorage.setItem(
-      `${STORAGE_PREFIX}posts`,
-      JSON.stringify(this.privateCache.posts)
-    );
+    // Save to Gist
+    try {
+      const xml = await this.exportToXML();
+      await saveToGist(xml);
+    } catch (error) {
+      console.error("Failed to save to Gist:", error);
+      // Fallback to localStorage
+      localStorage.setItem(
+        `${STORAGE_PREFIX}posts`,
+        JSON.stringify(this.privateCache.posts)
+      );
+    }
   },
 
   async deletePost(id: string): Promise<void> {
@@ -315,12 +394,20 @@ export const xmlStorage = {
     this.privateCache.posts = this.privateCache.posts.filter(
       (post) => post.id !== id
     );
-    localStorage.setItem(
-      `${STORAGE_PREFIX}posts`,
-      JSON.stringify(this.privateCache.posts)
-    );
-  },
 
+    // Update Gist
+    try {
+      const xml = await this.exportToXML();
+      await saveToGist(xml);
+    } catch (error) {
+      console.error("Failed to update Gist after deletion:", error);
+      // Fallback to localStorage
+      localStorage.setItem(
+        `${STORAGE_PREFIX}posts`,
+        JSON.stringify(this.privateCache.posts)
+      );
+    }
+  },
   async getPublishedPosts(): Promise<BlogPost[]> {
     await this.initialize();
     return this.privateCache.posts
@@ -331,7 +418,6 @@ export const xmlStorage = {
       );
   },
 
-  // Categories
   async getAllCategories(): Promise<Category[]> {
     await this.initialize();
     if (this.privateCache.categories.length === 0) {
@@ -340,31 +426,6 @@ export const xmlStorage = {
     return [...this.privateCache.categories];
   },
 
-  async saveCategory(category: Category): Promise<void> {
-    await this.initialize();
-    const existingIndex = this.privateCache.categories.findIndex(
-      (c) => c.id === category.id
-    );
-
-    const categoryToSave = {
-      ...category,
-      slug: category.slug || createSlug(category.name),
-    };
-
-    if (existingIndex >= 0) {
-      this.privateCache.categories[existingIndex] = categoryToSave;
-    } else {
-      categoryToSave.id = categoryToSave.id || generateId();
-      this.privateCache.categories.push(categoryToSave);
-    }
-
-    localStorage.setItem(
-      `${STORAGE_PREFIX}categories`,
-      JSON.stringify(this.privateCache.categories)
-    );
-  },
-
-  // Tags
   async getAllTags(): Promise<Tag[]> {
     await this.initialize();
     if (this.privateCache.tags.length === 0) {
@@ -373,31 +434,6 @@ export const xmlStorage = {
     return [...this.privateCache.tags];
   },
 
-  async saveTag(tag: Tag): Promise<void> {
-    await this.initialize();
-    const existingIndex = this.privateCache.tags.findIndex(
-      (t) => t.id === tag.id
-    );
-
-    const tagToSave = {
-      ...tag,
-      slug: tag.slug || createSlug(tag.name),
-    };
-
-    if (existingIndex >= 0) {
-      this.privateCache.tags[existingIndex] = tagToSave;
-    } else {
-      tagToSave.id = tagToSave.id || generateId();
-      this.privateCache.tags.push(tagToSave);
-    }
-
-    localStorage.setItem(
-      `${STORAGE_PREFIX}tags`,
-      JSON.stringify(this.privateCache.tags)
-    );
-  },
-
-  // Helper method to escape XML special characters
   escapeXml(unsafe: string): string {
     return unsafe.replace(/[<>&'"]/g, (c) => {
       switch (c) {
@@ -417,5 +453,3 @@ export const xmlStorage = {
     });
   },
 };
-
-

@@ -1,5 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { Card, Typography, Input, Select, Pagination } from "antd";
+import {
+  Card,
+  Typography,
+  Input,
+  Select,
+  Pagination,
+  Spin,
+  message,
+} from "antd";
 import { xmlStorage } from "../../utils/xmlStorage";
 import { BlogPost, Category } from "../../types";
 import { SearchOutlined } from "@ant-design/icons";
@@ -24,6 +32,9 @@ export const Home: React.FC = () => {
   const loadData = async () => {
     setLoading(true);
     try {
+      // Initialize storage first
+      await xmlStorage.initialize();
+
       const [publishedPosts, allCategories] = await Promise.all([
         xmlStorage.getPublishedPosts(),
         xmlStorage.getAllCategories(),
@@ -33,6 +44,7 @@ export const Home: React.FC = () => {
       setCategories(allCategories);
     } catch (error) {
       console.error("Failed to load data:", error);
+      message.error("Failed to load posts. Please try again later.");
     }
     setLoading(false);
   };
@@ -58,7 +70,7 @@ export const Home: React.FC = () => {
         <div className="flex flex-col sm:flex-row gap-4">
           <SearchInput
             placeholder="Search posts..."
-            prefix={<SearchOutlined size={16} />}
+            prefix={<SearchOutlined />}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="flex-1"
@@ -69,6 +81,7 @@ export const Home: React.FC = () => {
             onChange={setSelectedCategory}
             size="large"
             style={{ width: 200 }}
+            loading={loading}
           >
             <Select.Option value="all">All Categories</Select.Option>
             {categories.map((category) => (
@@ -83,8 +96,8 @@ export const Home: React.FC = () => {
       {/* Posts Grid */}
       {loading ? (
         <div className="text-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <Text className="mt-4 text-gray-600">Loading posts...</Text>
+          <Spin size="large" />
+          <Text className="mt-4 block text-gray-600">Loading posts...</Text>
         </div>
       ) : filteredPosts.length === 0 ? (
         <div className="text-center py-12">
@@ -98,7 +111,7 @@ export const Home: React.FC = () => {
         <>
           <div className="flex flex-col gap-y-6">
             {paginatedPosts.map((post) => (
-              <PostCard post={post} />
+              <PostCard key={post.id} post={post} />
             ))}
           </div>
 
