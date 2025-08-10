@@ -251,23 +251,23 @@ class BlogStorage {
     const secret = generateId();
     const webhookUrl = `${window.location.origin}/api/webhook`;
 
-    // Check if already subscribed
-    if (this.cache.blogInfo.followedBlogs?.includes(targetUrl)) {
-      return true;
-    }
-
     try {
-      // Register with target blog
       const response = await fetch(`${targetUrl}/api/subscribe`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Origin: window.location.origin, // Send origin header
+        },
         body: JSON.stringify({
           webhookUrl,
           secret,
         }),
+        mode: "cors", // Explicitly request CORS
       });
 
-      if (!response.ok) throw new Error("Subscription failed");
+      if (!response.ok) {
+        throw new Error(`Subscription failed: ${response.statusText}`);
+      }
 
       // Update local state
       const updatedInfo = {
@@ -282,7 +282,7 @@ class BlogStorage {
       return true;
     } catch (error) {
       console.error("Subscription failed:", error);
-      return false;
+      throw error;
     }
   }
 

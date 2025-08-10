@@ -1,6 +1,18 @@
 import { blogStorage } from "../storage/blogStorage";
 
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, X-Webhook-Secret",
+};
+
 export async function handleApiRequest(request: Request): Promise<Response> {
+  if (request.method === "OPTIONS") {
+    return new Response(null, {
+      headers: CORS_HEADERS,
+    });
+  }
+
   const url = new URL(request.url);
 
   // WebSub subscription endpoint
@@ -16,12 +28,18 @@ export async function handleApiRequest(request: Request): Promise<Response> {
       );
       return new Response(JSON.stringify({ success }), {
         status: success ? 200 : 400,
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          ...CORS_HEADERS,
+          "Content-Type": "application/json",
+        },
       });
     } catch (error) {
       return new Response(JSON.stringify({ success: false }), {
         status: 400,
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          ...CORS_HEADERS,
+          "Content-Type": "application/json",
+        },
       });
     }
   }

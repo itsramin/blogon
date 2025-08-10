@@ -30,11 +30,16 @@ function Followings() {
       if (success) {
         setNewFeedUrl("");
         message.success("Blog subscribed successfully");
-        refreshFeeds(); // Refresh the list after adding
+        refreshFeeds();
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to add blog:", error);
-      message.error("Failed to subscribe to blog");
+      message.error(
+        error.message.includes("CORS") ||
+          error.message.includes("Failed to fetch")
+          ? "Could not connect to blog (CORS issue). The blog may need to enable cross-origin requests."
+          : "Failed to subscribe to blog"
+      );
     } finally {
       setIsAdding(false);
     }
