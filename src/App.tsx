@@ -20,11 +20,11 @@ import Settings from "./pages/Admin/Settings";
 import PostEditor from "./pages/Admin/Posts/PostEditor";
 import PostDetail from "./pages/Public/PostDetail";
 import PostList from "./pages/Admin/Posts/PostList";
+import TagsPage from "./pages/Admin/Tags";
+import CategoriesPage from "./pages/Admin/Categories";
 
 const antTheme = {
   token: {
-    colorPrimary: "#1890FF",
-    colorSuccess: "#52C41A",
     borderRadius: 6,
     fontSize: 14,
     fontFamily:
@@ -102,14 +102,7 @@ function App() {
               path="/admin/categories"
               element={
                 <AdminLayout>
-                  <div className="text-center py-12">
-                    <h2 className="text-2xl font-bold text-gray-800 mb-4">
-                      Categories Management
-                    </h2>
-                    <p className="text-gray-600">
-                      Categories management interface will be implemented here.
-                    </p>
-                  </div>
+                  <CategoriesPage />
                 </AdminLayout>
               }
             />
@@ -118,14 +111,7 @@ function App() {
               path="/admin/tags"
               element={
                 <AdminLayout>
-                  <div className="text-center py-12">
-                    <h2 className="text-2xl font-bold text-gray-800 mb-4">
-                      Tags Management
-                    </h2>
-                    <p className="text-gray-600">
-                      Tags management interface will be implemented here.
-                    </p>
-                  </div>
+                  <TagsPage />
                 </AdminLayout>
               }
             />
