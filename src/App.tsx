@@ -15,7 +15,6 @@ import { Home } from "./pages/Public/Home";
 // Admin Pages
 import { AdminLogin } from "./pages/Admin/Login";
 import { Dashboard } from "./pages/Admin/Dashboard";
-import Followings from "./pages/Admin/Followings";
 import Settings from "./pages/Admin/Settings";
 import PostEditor from "./pages/Admin/Posts/PostEditor";
 import PostDetail from "./pages/Public/PostDetail";
@@ -129,7 +128,7 @@ function App() {
               path="/admin/followings"
               element={
                 <AdminLayout>
-                  <Followings />
+                  <></>
                 </AdminLayout>
               }
             />

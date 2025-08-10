@@ -3,8 +3,6 @@ import { Card, Typography, Input, Select, Pagination, Spin, Tabs } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 import PostCard from "../../components/PostCard";
 import { useAuth } from "../../context/AuthContext";
-import Feeds from "../Admin/Feeds";
-import useFollowings from "../../hooks/useFollowings";
 import usePosts from "../../hooks/usePosts";
 
 const { Text } = Typography;
@@ -14,7 +12,6 @@ export const Home: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 6;
   const { isAuthenticated } = useAuth();
-  const { feeds } = useFollowings();
   const {
     posts: filteredPosts,
     loading,
@@ -103,7 +100,7 @@ export const Home: React.FC = () => {
         </div>
       </Card>
 
-      {isAuthenticated && feeds && feeds.length > 0 ? (
+      {isAuthenticated ? (
         <Tabs
           items={[
             {
@@ -111,7 +108,7 @@ export const Home: React.FC = () => {
               label: "My posts",
               children: myPosts,
             },
-            { key: "feeds", label: "Followings", children: <Feeds /> },
+            { key: "feeds", label: "Followings", children: <></> },
           ]}
         />
       ) : (

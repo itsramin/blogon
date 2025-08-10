@@ -15,8 +15,6 @@ export interface BlogPost {
   url: string;
   link: string;
   number: number;
-  isExternal?: boolean; // Mark if post came via WebSub
-  source?: string;
 }
 
 export interface BlogInfo {
@@ -34,9 +32,6 @@ export interface BlogInfo {
     firstName: string;
     lastName: string;
   }>;
-  followedFeeds?: string[];
-  followedBlogs?: string[];
-  subscriptions?: Subscription[];
 }
 
 export interface BlogData {
