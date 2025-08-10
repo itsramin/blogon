@@ -1,20 +1,18 @@
-// src/hooks/useBlog.ts
 import { useState, useEffect, useCallback } from "react";
 import { message } from "antd";
-import { xmlStorage } from "../utils/xmlStorage";
 import { BlogInfo } from "../types";
+import { blogStorage } from "../storage/blogStorage";
 
 export const useBlog = () => {
   const [blogInfo, setBlogInfo] = useState<BlogInfo | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Load blog info
   const loadBlogInfo = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const info = await xmlStorage.getBlogInfo();
+      const info = await blogStorage.getBlogInfo();
       setBlogInfo(info);
       return info;
     } catch (err) {
@@ -27,13 +25,12 @@ export const useBlog = () => {
     }
   }, []);
 
-  // Update blog info
   const updateBlogInfo = useCallback(
     async (values: Partial<BlogInfo>) => {
       setLoading(true);
       setError(null);
       try {
-        await xmlStorage.updateBlogInfo(values);
+        await blogStorage.updateBlogInfo(values);
         const updatedInfo = await loadBlogInfo(); // Refresh the data
         message.success("Blog settings updated successfully");
         return updatedInfo;
@@ -49,7 +46,6 @@ export const useBlog = () => {
     [loadBlogInfo]
   );
 
-  // Load blog info on mount
   useEffect(() => {
     loadBlogInfo();
   }, [loadBlogInfo]);

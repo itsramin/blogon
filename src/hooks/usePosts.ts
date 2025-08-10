@@ -1,42 +1,38 @@
 import { useEffect, useState, useCallback } from "react";
-import { xmlStorage } from "../utils/xmlStorage";
 import { message } from "antd";
 import { BlogPost, Category } from "../types";
+import { blogStorage } from "../storage/blogStorage";
 
 function usePosts() {
   const [allPosts, setAllPosts] = useState<BlogPost[]>([]);
   const [filteredPosts, setFilteredPosts] = useState<BlogPost[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
+    setError(null);
     try {
-      // Initialize storage first
-      await xmlStorage.initialize();
-
       const [publishedPosts, allCategories] = await Promise.all([
-        xmlStorage.getPublishedPosts(),
-        xmlStorage.getAllCategories(),
+        blogStorage.getPublishedPosts(),
+        blogStorage.getAllCategories(),
       ]);
 
       setAllPosts(publishedPosts);
       setCategories(allCategories);
-      setFilteredPosts(publishedPosts); // Initialize filteredPosts with all posts
+      setFilteredPosts(publishedPosts);
     } catch (error) {
       console.error("Failed to load data:", error);
+      setError("Failed to load posts");
       message.error("Failed to load posts. Please try again later.");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
-  };
+  }, []);
 
-  // Filter posts based on search term and category
   const filterPosts = useCallback(() => {
     const filtered = allPosts.filter((post) => {
       const matchesSearch =
@@ -51,20 +47,16 @@ function usePosts() {
     setFilteredPosts(filtered);
   }, [allPosts, searchTerm, selectedCategory]);
 
-  // Re-filter whenever search term, category, or posts change
-  useEffect(() => {
-    filterPosts();
-  }, [searchTerm, selectedCategory, allPosts, filterPosts]);
-
   const getPostById = useCallback(
     async (id: string): Promise<BlogPost | null> => {
       setLoading(true);
+      setError(null);
       try {
-        await xmlStorage.initialize();
-        const post = await xmlStorage.getPostById(id);
+        const post = await blogStorage.getPostById(id);
         return post;
       } catch (error) {
         console.error("Failed to get post by ID:", error);
+        setError("Failed to load post");
         message.error("Failed to load post");
         return null;
       } finally {
@@ -77,13 +69,14 @@ function usePosts() {
   const savePost = useCallback(
     async (post: BlogPost): Promise<void> => {
       setLoading(true);
+      setError(null);
       try {
-        await xmlStorage.initialize();
-        await xmlStorage.savePost(post);
+        await blogStorage.savePost(post);
         message.success("Post saved successfully");
-        await loadData(); // Refresh the posts list
+        await loadData();
       } catch (error) {
         console.error("Failed to save post:", error);
+        setError("Failed to save post");
         message.error("Failed to save post");
         throw error;
       } finally {
@@ -96,13 +89,14 @@ function usePosts() {
   const deletePost = useCallback(
     async (id: string): Promise<void> => {
       setLoading(true);
+      setError(null);
       try {
-        await xmlStorage.initialize();
-        await xmlStorage.deletePost(id);
+        await blogStorage.deletePost(id);
         message.success("Post deleted successfully");
-        await loadData(); // Refresh the posts list
+        await loadData();
       } catch (error) {
         console.error("Failed to delete post:", error);
+        setError("Failed to delete post");
         message.error("Failed to delete post");
         throw error;
       } finally {
@@ -111,16 +105,18 @@ function usePosts() {
     },
     [loadData]
   );
+
   const addPostsFromXML = useCallback(
     async (xmlContent: string): Promise<void> => {
       setLoading(true);
+      setError(null);
       try {
-        await xmlStorage.initialize();
-        await xmlStorage.addPostsFromXML(xmlContent);
+        await blogStorage.addPostsFromXML(xmlContent);
         message.success("Posts imported successfully");
         await loadData();
       } catch (error) {
         console.error("Failed to import posts:", error);
+        setError("Failed to import posts");
         message.error("Failed to import posts");
         throw error;
       } finally {
@@ -130,11 +126,20 @@ function usePosts() {
     [loadData]
   );
 
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  useEffect(() => {
+    filterPosts();
+  }, [searchTerm, selectedCategory, allPosts, filterPosts]);
+
   return {
     posts: filteredPosts,
     allPosts,
     categories,
     loading,
+    error,
     searchTerm,
     setSearchTerm,
     selectedCategory,
