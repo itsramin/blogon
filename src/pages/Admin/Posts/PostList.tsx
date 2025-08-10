@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   Card,
   Table,
@@ -12,7 +12,6 @@ import {
   Select,
 } from "antd";
 import { Link } from "react-router-dom";
-import { xmlStorage } from "../../../utils/xmlStorage";
 import { BlogPost } from "../../../types";
 import {
   DeleteOutlined,
@@ -21,56 +20,40 @@ import {
   PlusOutlined,
   SearchOutlined,
 } from "@ant-design/icons";
-
 import { format } from "date-fns";
+import usePosts from "../../../hooks/usePosts";
 
 const { Title } = Typography;
 const { Search: SearchInput } = Input;
 
-export const PostList: React.FC = () => {
-  const [posts, setPosts] = useState<BlogPost[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
+const PostList: React.FC = () => {
+  const {
+    posts,
+    loading,
+    searchTerm,
+    setSearchTerm,
+    refreshPosts,
+    categories,
+    selectedCategory,
+    setSelectedCategory,
+    deletePost,
+  } = usePosts();
   const [statusFilter, setStatusFilter] = useState<string>("all");
 
-  useEffect(() => {
-    loadPosts();
-  }, []);
-
-  const loadPosts = async () => {
-    setLoading(true);
-    try {
-      const allPosts = await xmlStorage.getAllPosts();
-      setPosts(
-        allPosts.sort(
-          (a, b) =>
-            new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-        )
-      );
-    } catch (error) {
-      message.error("Failed to load posts");
-    }
-    setLoading(false);
-  };
+  const filteredPosts = posts.filter((post) => {
+    const matchesStatus =
+      statusFilter === "all" || post.status === statusFilter;
+    return matchesStatus;
+  });
 
   const handleDelete = async (id: string) => {
     try {
-      await xmlStorage.deletePost(id);
-      message.success("Post deleted successfully");
-      loadPosts();
+      await deletePost(id);
+      refreshPosts();
     } catch (error) {
       message.error("Failed to delete post");
     }
   };
-
-  const filteredPosts = posts.filter((post) => {
-    const matchesSearch =
-      post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      post.content.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus =
-      statusFilter === "all" || post.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
 
   const columns = [
     {
@@ -85,8 +68,7 @@ export const PostList: React.FC = () => {
           >
             {title}
           </Link>
-          <div className="text-sm text-gray-500 mt-1">/{record.url}</div>{" "}
-          {/* Changed from slug to url */}
+          <div className="text-sm text-gray-500 mt-1">/{record.url}</div>
         </div>
       ),
     },
@@ -106,9 +88,7 @@ export const PostList: React.FC = () => {
       dataIndex: "categories",
       key: "categories",
       width: 200,
-      render: (
-        categories: string[] = [] // Added default value
-      ) => (
+      render: (categories: string[] = []) => (
         <div>
           {categories.map((category) => (
             <Tag key={category} color="blue" className="mb-1">
@@ -123,9 +103,8 @@ export const PostList: React.FC = () => {
       dataIndex: "author",
       key: "author",
       width: 150,
-      render: (
-        author: { firstName: string; lastName: string } // Updated author display
-      ) => `${author.firstName} ${author.lastName}`,
+      render: (author: { firstName: string; lastName: string }) =>
+        `${author.firstName} ${author.lastName}`,
     },
     {
       title: "Updated",
@@ -145,7 +124,7 @@ export const PostList: React.FC = () => {
               type="text"
               size="small"
               icon={<EyeOutlined size={14} />}
-              onClick={() => window.open(`/post/${record.url}`, "_blank")} // Changed from slug to url
+              onClick={() => window.open(`/post/${record.url}`, "_blank")}
               title="View Post"
             />
           )}
@@ -200,6 +179,19 @@ export const PostList: React.FC = () => {
             size="large"
           />
           <Select
+            value={selectedCategory}
+            onChange={setSelectedCategory}
+            size="large"
+            style={{ width: 150 }}
+          >
+            <Select.Option value="all">All Categories</Select.Option>
+            {categories.map((category) => (
+              <Select.Option key={category.id} value={category.id}>
+                {category.name}
+              </Select.Option>
+            ))}
+          </Select>
+          <Select
             value={statusFilter}
             onChange={setStatusFilter}
             size="large"
@@ -228,3 +220,5 @@ export const PostList: React.FC = () => {
     </div>
   );
 };
+
+export default PostList;

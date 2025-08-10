@@ -1,19 +1,6 @@
 import React, { useEffect, useState } from "react";
-import {
-  Card,
-  Row,
-  Col,
-  List,
-  Typography,
-  Tag,
-  Button,
-  message,
-  Upload,
-} from "antd";
+import { Card, Row, Col, List, Typography, Tag, Button, Upload } from "antd";
 import { Link } from "react-router-dom";
-import { xmlStorage } from "../../utils/xmlStorage";
-import { BlogPost } from "../../types";
-
 import {
   CalendarOutlined,
   EditOutlined,
@@ -24,62 +11,49 @@ import {
 } from "@ant-design/icons";
 import { format } from "date-fns";
 import StatCard from "../../components/StatCard";
+import usePosts from "../../hooks/usePosts";
 
 const { Title } = Typography;
 
 export const Dashboard: React.FC = () => {
+  const { posts, addPostsFromXML } = usePosts();
   const [stats, setStats] = useState({
     totalPosts: 0,
     publishedPosts: 0,
     draftPosts: 0,
     totalViews: 0,
   });
-  const [recentPosts, setRecentPosts] = useState<BlogPost[]>([]);
-
   useEffect(() => {
-    loadDashboardData();
-  }, []);
-
-  const loadDashboardData = async () => {
-    const allPosts = await xmlStorage.getAllPosts();
-    const publishedPosts = allPosts.filter(
-      (post) => post.status === "published"
-    );
-    const draftPosts = allPosts.filter((post) => post.status === "draft");
+    const publishedPosts = posts.filter((post) => post.status === "published");
+    const draftPosts = posts.filter((post) => post.status === "draft");
 
     setStats({
-      totalPosts: allPosts.length,
+      totalPosts: posts.length,
       publishedPosts: publishedPosts.length,
       draftPosts: draftPosts.length,
-      totalViews: Math.floor(Math.random() * 10000) + 1000, // Mock data
+      totalViews: Math.floor(Math.random() * 10000) + 1000,
     });
-
-    // Get recent posts (last 5)
-    const recent = allPosts
-      .sort(
-        (a, b) =>
-          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-      )
-      .slice(0, 5);
-    setRecentPosts(recent);
-  };
+  }, [posts]);
 
   const handleImport = async (file: File) => {
     const reader = new FileReader();
     reader.onload = async (e) => {
       try {
         const content = e.target?.result as string;
-        await xmlStorage.addPostsFromXML(content);
-        message.success("Posts imported and added successfully!");
-        loadDashboardData();
+        await addPostsFromXML(content);
       } catch (error) {
-        message.error("Failed to import posts");
         console.error(error);
       }
     };
     reader.readAsText(file);
     return false;
   };
+  const recentPosts = posts
+    .sort(
+      (a, b) =>
+        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+    )
+    .slice(0, 5);
 
   return (
     <div className="space-y-6">

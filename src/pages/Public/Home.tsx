@@ -20,23 +20,19 @@ const { Text } = Typography;
 const { Search: SearchInput } = Input;
 
 export const Home: React.FC = () => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [currentPage, setCurrentPage] = useState(1);
-
   const pageSize = 6;
   const { isAuthenticated } = useAuth();
   const { feeds, addFeed } = useFollowings();
-  const { posts, loading, categories } = usePosts();
-
-  const filteredPosts = posts.filter((post) => {
-    const matchesSearch =
-      post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      post.content.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory =
-      selectedCategory === "all" || post.categories.includes(selectedCategory);
-    return matchesSearch && matchesCategory;
-  });
+  const {
+    posts: filteredPosts,
+    loading,
+    categories,
+    searchTerm,
+    setSearchTerm,
+    selectedCategory,
+    setSelectedCategory,
+  } = usePosts();
 
   const paginatedPosts = filteredPosts.slice(
     (currentPage - 1) * pageSize,

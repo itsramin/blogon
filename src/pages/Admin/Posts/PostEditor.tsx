@@ -10,92 +10,82 @@ import {
   Typography,
   Row,
   Col,
-  Spin,
 } from "antd";
 import { useNavigate, useParams } from "react-router-dom";
-import { xmlStorage, generateId, createSlug } from "../../../utils/xmlStorage";
-import { BlogPost, Category, Tag } from "../../../types";
+import { useBlog } from "../../../hooks/useBlog";
+import { BlogPost } from "../../../types";
 import { RichTextEditor } from "../../../components/Editor/RichTextEditor";
 import {
   ArrowLeftOutlined,
   EyeOutlined,
   SaveOutlined,
 } from "@ant-design/icons";
+import usePosts from "../../../hooks/usePosts";
 
 const { Title } = Typography;
 
-export const PostEditor: React.FC = () => {
+const PostEditor: React.FC = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const { id } = useParams();
-  const [loading, setLoading] = useState(false);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [tags, setTags] = useState<Tag[]>([]);
   const [content, setContent] = useState("");
   const [isEditing, setIsEditing] = useState(false);
-  const [initializing, setInitializing] = useState(true);
+
+  const { blogInfo } = useBlog();
+  const { categories, refreshPosts, getPostById, savePost } = usePosts();
+
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const initialize = async () => {
-      try {
-        await xmlStorage.initialize();
-        setInitializing(false);
-        loadData();
-      } catch (error) {
-        message.error("Failed to initialize storage");
-        setInitializing(false);
-      }
-    };
-    initialize();
-  }, [id]);
+    if (id && id !== "new") {
+      loadPostData();
+    } else {
+      form.setFieldsValue({
+        author: {
+          firstName: blogInfo?.owner.firstName || "Admin",
+          lastName: blogInfo?.owner.lastName || "",
+        },
+        status: "draft",
+      });
+    }
+  }, [id, blogInfo]);
 
-  const loadData = async () => {
+  const loadPostData = async () => {
+    if (!id || id === "new") return;
+
     setLoading(true);
     try {
-      await xmlStorage.initialize();
-      const [allCategories, allTags] = await Promise.all([
-        xmlStorage.getAllCategories(),
-        xmlStorage.getAllTags(),
-      ]);
-
-      setCategories(allCategories);
-      setTags(allTags);
-
-      if (id && id !== "new") {
-        const post = await xmlStorage.getPostById(id);
-        if (post) {
-          setIsEditing(true);
-          setContent(post.content);
-          form.setFieldsValue({
-            title: post.title,
-            url: post.url,
-            author: {
-              firstName: post.author.firstName,
-              lastName: post.author.lastName,
-            },
-            categories: post.categories,
-            tags: post.tags,
-            status: post.status,
-          });
-        }
-      } else {
+      const post = await getPostById(id);
+      if (post) {
+        setIsEditing(true);
+        setContent(post.content);
         form.setFieldsValue({
+          title: post.title,
+          url: post.url,
           author: {
-            firstName: "Admin",
-            lastName: "",
+            firstName: post.author.firstName,
+            lastName: post.author.lastName,
           },
-          status: "draft",
+          categories: post.categories,
+          tags: post.tags,
+          status: post.status,
         });
       }
     } catch (error) {
-      message.error("Failed to load data");
+      message.error("Failed to load post data");
     }
     setLoading(false);
   };
 
   const generateUrlFromTitle = (title: string) => {
     if (title) {
-      form.setFieldValue("url", createSlug(title));
+      const slug = title
+        .toLowerCase()
+        .replace(/[^a-z0-9 -]/g, "")
+        .replace(/\s+/g, "-")
+        .replace(/-+/g, "-")
+        .trim();
+      form.setFieldValue("url", slug);
     }
   };
 
@@ -108,34 +98,31 @@ export const PostEditor: React.FC = () => {
         title: values.title,
         content,
         author: {
-          userName: createSlug(
-            `${authorValue.firstName} ${authorValue.lastName}`
-          ),
+          userName: `${authorValue.firstName} ${authorValue.lastName}`
+            .toLowerCase()
+            .replace(/\s+/g, "-"),
           firstName: authorValue.firstName || "",
           lastName: authorValue.lastName || "",
         },
         url: values.url,
         link: `/post/${values.url}`,
-        number: isEditing
-          ? (await xmlStorage.getPostById(id!))?.number || Date.now()
-          : Date.now(),
+        number: Date.now(),
         categories: values.categories || [],
         tags: values.tags || [],
         status: publish ? "published" : values.status,
         createdAt: isEditing
-          ? (await xmlStorage.getPostById(id!))?.createdAt ||
-            new Date().toISOString()
+          ? (await getPostById(id!))?.createdAt || new Date().toISOString()
           : new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
 
-      await xmlStorage.savePost(postData);
-      message.success(`Post ${publish ? "published" : "saved"} successfully`);
+      await savePost(postData);
 
       if (!isEditing) {
         navigate(`/admin/posts/edit/${postData.id}`);
       }
       setIsEditing(true);
+      refreshPosts();
     } catch (error) {
       message.error(`Failed to ${publish ? "publish" : "save"} post`);
     }
@@ -151,13 +138,10 @@ export const PostEditor: React.FC = () => {
     }
   };
 
-  if (initializing) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <Spin size="large" />
-      </div>
-    );
-  }
+  // Helper functions to be moved to usePosts hook
+  const generateId = (): string => {
+    return Date.now().toString(36) + Math.random().toString(36).substr(2);
+  };
 
   return (
     <div className="space-y-6">
@@ -240,20 +224,6 @@ export const PostEditor: React.FC = () => {
 
           <Col xs={24} lg={8}>
             <Card title="Post Settings" className="shadow-sm mb-6">
-              <Form.Item
-                name={["author", "firstName"]}
-                label="Author First Name"
-                rules={[
-                  { required: true, message: "Please enter author first name" },
-                ]}
-              >
-                <Input placeholder="First name" />
-              </Form.Item>
-
-              <Form.Item name={["author", "lastName"]} label="Author Last Name">
-                <Input placeholder="Last name" />
-              </Form.Item>
-
               <Form.Item name="status" label="Status">
                 <Select>
                   <Select.Option value="draft">Draft</Select.Option>
@@ -278,10 +248,7 @@ export const PostEditor: React.FC = () => {
                   mode="tags"
                   placeholder="Enter or select tags"
                   loading={loading}
-                  options={tags.map((tag) => ({
-                    value: tag.name,
-                    label: tag.name,
-                  }))}
+                  tokenSeparators={[","]}
                 />
               </Form.Item>
             </Card>
@@ -291,3 +258,5 @@ export const PostEditor: React.FC = () => {
     </div>
   );
 };
+
+export default PostEditor;

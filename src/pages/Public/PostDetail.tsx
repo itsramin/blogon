@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { Typography, Tag, Card, Button } from "antd";
+import { Typography, Tag, Card, Button, message } from "antd";
 import { useParams, Link } from "react-router-dom";
-import { xmlStorage } from "../../utils/xmlStorage";
 import { BlogPost } from "../../types";
 import {
   CalendarOutlined,
@@ -9,26 +8,25 @@ import {
   UserOutlined,
 } from "@ant-design/icons";
 import { format } from "date-fns";
+import usePosts from "../../hooks/usePosts";
 
 const { Title } = Typography;
 
-export const PostDetail: React.FC = () => {
+const PostDetail: React.FC = () => {
   const { slug } = useParams();
   const [post, setPost] = useState<BlogPost | null>(null);
-  const [loading, setLoading] = useState(true);
   const [relatedPosts, setRelatedPosts] = useState<BlogPost[]>([]);
+  const { allPosts, loading } = usePosts();
 
   useEffect(() => {
     if (slug) {
       loadPost(slug);
     }
-  }, [slug]);
+  }, [slug, allPosts]);
 
   const loadPost = async (postUrl: string) => {
-    setLoading(true);
     try {
-      // Changed from getPostBySlug to find by URL
-      const allPosts = await xmlStorage.getAllPosts();
+      // Find post by URL from the already loaded posts
       const foundPost = allPosts.find((p) => p.url === postUrl);
 
       if (foundPost && foundPost.status === "published") {
@@ -45,37 +43,59 @@ export const PostDetail: React.FC = () => {
       }
     } catch (error) {
       console.error("Failed to load post:", error);
+      message.error("Failed to load post");
     }
-    setLoading(false);
   };
 
   const handleShare = () => {
     if (navigator.share) {
-      navigator.share({
-        title: post?.title,
-        text: post?.content?.substring(0, 100) || "Check out this post", // Removed excerpt
-        url: post?.link || window.location.href, // Use post.link if available
-      });
+      navigator
+        .share({
+          title: post?.title,
+          text: post?.content?.substring(0, 100) || "Check out this post",
+          url: post?.link || window.location.href,
+        })
+        .catch(() => {
+          // Fallback if share fails
+          copyToClipboard();
+        });
     } else {
-      navigator.clipboard.writeText(post?.link || window.location.href);
+      copyToClipboard();
     }
   };
 
-  if (loading) {
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(post?.link || window.location.href);
+    message.success("Link copied to clipboard!");
+  };
+
+  if (loading && !post) {
     return (
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">...</div>
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <Card loading={true} />
+      </div>
     );
   }
 
   if (!post) {
     return (
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">...</div>
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <Card>
+          <Title level={3}>Post not found</Title>
+          <p>The post you're looking for doesn't exist or isn't published.</p>
+          <Link to="/">
+            <Button type="primary" className="mt-4">
+              Back to Home
+            </Button>
+          </Link>
+        </Card>
+      </div>
     );
   }
 
   return (
     <>
-      {/* SEO Meta Tags - Updated to use content instead of excerpt */}
+      {/* SEO Meta Tags */}
       <title>{post.title} | Weblog</title>
       <meta name="description" content={post.content?.substring(0, 160)} />
       <meta property="og:title" content={post.title} />
@@ -87,8 +107,6 @@ export const PostDetail: React.FC = () => {
       {post.link && <meta property="og:url" content={post.link} />}
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Navigation - unchanged */}
-
         {/* Post Header */}
         <Card className="shadow-sm mb-8">
           <div className="mb-4">
@@ -107,15 +125,19 @@ export const PostDetail: React.FC = () => {
             <div className="flex items-center space-x-6 text-gray-500">
               <span className="flex items-center">
                 <UserOutlined size={16} className="mr-2" />
-                {post.author.firstName} {post.author.lastName}{" "}
+                {post.author.firstName} {post.author.lastName}
               </span>
               <span className="flex items-center">
                 <CalendarOutlined size={16} className="mr-2" />
-                {format(new Date(post.updatedAt), "MMMM d, yyyy")}{" "}
+                {format(new Date(post.updatedAt), "MMMM d, yyyy")}
               </span>
             </div>
 
-            <Button icon={<ExportOutlined size={16} />} onClick={handleShare}>
+            <Button
+              icon={<ExportOutlined size={16} />}
+              onClick={handleShare}
+              loading={loading}
+            >
               Share
             </Button>
           </div>
@@ -134,7 +156,7 @@ export const PostDetail: React.FC = () => {
         </Card>
 
         {/* Tags */}
-        {post.tags.length > 0 && (
+        {post.tags?.length > 0 && (
           <Card className="shadow-sm mb-8">
             <Title level={4} className="mb-4">
               Tags
@@ -189,3 +211,5 @@ export const PostDetail: React.FC = () => {
     </>
   );
 };
+
+export default PostDetail;

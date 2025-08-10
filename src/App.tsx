@@ -11,15 +11,15 @@ import { AdminLayout } from "./components/Layout/AdminLayout";
 
 // Public Pages
 import { Home } from "./pages/Public/Home";
-import { PostDetail } from "./pages/Public/PostDetail";
 
 // Admin Pages
 import { AdminLogin } from "./pages/Admin/Login";
 import { Dashboard } from "./pages/Admin/Dashboard";
-import { PostList } from "./pages/Admin/Posts/PostList";
-import { PostEditor } from "./pages/Admin/Posts/PostEditor";
 import Followings from "./pages/Admin/Followings";
 import Settings from "./pages/Admin/Settings";
+import PostEditor from "./pages/Admin/Posts/PostEditor";
+import PostDetail from "./pages/Public/PostDetail";
+import PostList from "./pages/Admin/Posts/PostList";
 
 const antTheme = {
   token: {

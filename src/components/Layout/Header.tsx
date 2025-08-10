@@ -6,6 +6,7 @@ import {
   UserOutlined,
   LogoutOutlined,
 } from "@ant-design/icons";
+import { useBlog } from "../../hooks/useBlog";
 
 const { Header: AntHeader } = Layout;
 
@@ -13,6 +14,7 @@ export const Header: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { isAuthenticated, user, logout } = useAuth();
+  const { blogInfo } = useBlog();
 
   const isAdminRoute = location.pathname.startsWith("/admin");
 
@@ -51,7 +53,7 @@ export const Header: React.FC = () => {
             to="/admin"
             className="flex items-center space-x-2 text-xl font-bold text-gray-800"
           >
-            <span>Weblog Admin</span>
+            <span>{blogInfo?.title}</span>
           </Link>
         </div>
 
@@ -79,7 +81,7 @@ export const Header: React.FC = () => {
           to="/"
           className="flex items-center space-x-2 text-xl font-bold text-gray-800"
         >
-          <span>My Weblog</span>
+          <span>{blogInfo?.title}</span>
         </Link>
 
         <div className="flex items-center space-x-4">
@@ -89,7 +91,7 @@ export const Header: React.FC = () => {
             </Button>
           ) : (
             <Button type="primary" onClick={() => navigate("/admin/login")}>
-              Admin Login
+              Login
             </Button>
           )}
         </div>
