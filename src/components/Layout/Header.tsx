@@ -85,6 +85,14 @@ export const Header: React.FC = () => {
         </Link>
 
         <div className="flex items-center space-x-4">
+          <Link
+            rel="alternate"
+            type="application/rss+xml"
+            to="/rss.xml"
+            title="RSS Feed"
+          >
+            RSS
+          </Link>
           {isAuthenticated ? (
             <Button type="primary" onClick={() => navigate("/admin")}>
               Dashboard

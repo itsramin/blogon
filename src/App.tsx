@@ -22,6 +22,7 @@ import PostList from "./pages/Admin/Posts/PostList";
 import TagsPage from "./pages/Admin/Tags";
 import CategoriesPage from "./pages/Admin/Categories";
 import Followings from "./pages/Admin/Followings";
+import RSSPage from "./pages/Public/RSSPage";
 
 const antTheme = {
   token: {
@@ -38,6 +39,7 @@ function App() {
       <AuthProvider>
         <Router>
           <Routes>
+            <Route path="/rss.xml" element={<RSSPage />} />
             {/* Public Routes */}
             <Route
               path="/"
