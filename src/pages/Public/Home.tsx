@@ -4,6 +4,7 @@ import { SearchOutlined } from "@ant-design/icons";
 import PostCard from "../../components/PostCard";
 import { useAuth } from "../../context/AuthContext";
 import usePosts from "../../hooks/usePosts";
+import Feeds from "../Admin/Feeds";
 
 const { Text } = Typography;
 const { Search: SearchInput } = Input;
@@ -108,7 +109,7 @@ export const Home: React.FC = () => {
               label: "My posts",
               children: myPosts,
             },
-            { key: "feeds", label: "Followings", children: <></> },
+            { key: "feeds", label: "Followings", children: <Feeds /> },
           ]}
         />
       ) : (
