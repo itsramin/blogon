@@ -18,7 +18,7 @@ import { AdminLogin } from "./pages/Admin/Login";
 import { Dashboard } from "./pages/Admin/Dashboard";
 import { PostList } from "./pages/Admin/Posts/PostList";
 import { PostEditor } from "./pages/Admin/Posts/PostEditor";
-import FollowedFeed from "./pages/Admin/FollowedFeed";
+import Followings from "./pages/Admin/Followings";
 
 const antTheme = {
   token: {
@@ -146,10 +146,10 @@ function App() {
             />
 
             <Route
-              path="/admin/feed"
+              path="/admin/followings"
               element={
                 <AdminLayout>
-                  <FollowedFeed />
+                  <Followings />
                 </AdminLayout>
               }
             />

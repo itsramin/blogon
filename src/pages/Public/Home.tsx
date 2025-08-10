@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   Card,
   Typography,
@@ -8,68 +8,29 @@ import {
   Spin,
   message,
   Button,
+  Tabs,
 } from "antd";
 import { xmlStorage } from "../../utils/xmlStorage";
-import { BlogPost, Category } from "../../types";
 import { SearchOutlined } from "@ant-design/icons";
 import PostCard from "../../components/PostCard";
 import { fetchFeedPosts, isValidFeedUrl } from "../../services/feedService";
+import { useAuth } from "../../context/AuthContext";
+import FollowedFeed from "../Admin/FollowedFeed";
+import useFollowings from "../../hooks/useFollowings";
+import usePosts from "../../hooks/usePosts";
 
 const { Text } = Typography;
 const { Search: SearchInput } = Input;
 
 export const Home: React.FC = () => {
-  const [posts, setPosts] = useState<BlogPost[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [currentPage, setCurrentPage] = useState(1);
-  const [feeds, setFeeds] = useState<string[]>([]);
+
   const pageSize = 6;
-
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
-    setLoading(true);
-    try {
-      // Initialize storage first
-      await xmlStorage.initialize();
-
-      const [publishedPosts, allCategories] = await Promise.all([
-        xmlStorage.getPublishedPosts(),
-        xmlStorage.getAllCategories(),
-      ]);
-
-      setPosts(publishedPosts);
-      setCategories(allCategories);
-    } catch (error) {
-      console.error("Failed to load data:", error);
-      message.error("Failed to load posts. Please try again later.");
-    }
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    loadFollowedPosts();
-  }, []);
-
-  const loadFollowedPosts = async () => {
-    setLoading(true);
-    await xmlStorage.initialize();
-    const blogInfo = await xmlStorage.getBlogInfo();
-    const followedFeeds = blogInfo.followedFeeds || [];
-    setFeeds(followedFeeds);
-
-    if (followedFeeds.length === 0) {
-      setLoading(false);
-      return;
-    }
-
-    setLoading(false);
-  };
+  const { isAuthenticated } = useAuth();
+  const { feeds } = useFollowings();
+  const { posts, loading, categories } = usePosts();
 
   const filteredPosts = posts.filter((post) => {
     const matchesSearch =
@@ -103,10 +64,6 @@ export const Home: React.FC = () => {
 
         const updatedFeeds = [...feeds, url];
         await xmlStorage.updateBlogInfo({ followedFeeds: updatedFeeds });
-        setFeeds(updatedFeeds);
-
-        message.success("Feed added successfully");
-        loadFollowedPosts();
       } catch (error) {
         message.error(
           "Failed to fetch feed. Please check the URL and try again."
@@ -116,6 +73,49 @@ export const Home: React.FC = () => {
       console.error("Validation failed:", error);
     }
   };
+
+  const myPosts = (
+    <>
+      {loading ? (
+        <div className="text-center py-12">
+          <Spin size="large" />
+          <Text className="mt-4 block text-gray-600">Loading posts...</Text>
+        </div>
+      ) : filteredPosts.length === 0 ? (
+        <div className="text-center py-12">
+          <Text className="text-xl text-gray-600">
+            {searchTerm || selectedCategory !== "all"
+              ? "No posts found matching your criteria."
+              : "No posts available yet."}
+          </Text>
+        </div>
+      ) : (
+        <>
+          <div className="flex flex-col gap-y-6">
+            {paginatedPosts.map((post) => (
+              <PostCard key={post.id} post={post} />
+            ))}
+          </div>
+
+          {filteredPosts.length > pageSize && (
+            <div className="mt-8 text-center">
+              <Pagination
+                current={currentPage}
+                total={filteredPosts.length}
+                pageSize={pageSize}
+                onChange={setCurrentPage}
+                showSizeChanger={false}
+                showQuickJumper
+                showTotal={(total, range) =>
+                  `${range[0]}-${range[1]} of ${total} posts`
+                }
+              />
+            </div>
+          )}
+        </>
+      )}
+    </>
+  );
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-16">
@@ -155,44 +155,19 @@ export const Home: React.FC = () => {
         </div>
       </Card>
 
-      {/* Posts Grid */}
-      {loading ? (
-        <div className="text-center py-12">
-          <Spin size="large" />
-          <Text className="mt-4 block text-gray-600">Loading posts...</Text>
-        </div>
-      ) : filteredPosts.length === 0 ? (
-        <div className="text-center py-12">
-          <Text className="text-xl text-gray-600">
-            {searchTerm || selectedCategory !== "all"
-              ? "No posts found matching your criteria."
-              : "No posts available yet."}
-          </Text>
-        </div>
+      {isAuthenticated && feeds && feeds.length > 0 ? (
+        <Tabs
+          items={[
+            {
+              key: "posts",
+              label: "My posts",
+              children: myPosts,
+            },
+            { key: "feeds", label: "Followings", children: <FollowedFeed /> },
+          ]}
+        />
       ) : (
-        <>
-          <div className="flex flex-col gap-y-6">
-            {paginatedPosts.map((post) => (
-              <PostCard key={post.id} post={post} />
-            ))}
-          </div>
-
-          {filteredPosts.length > pageSize && (
-            <div className="mt-8 text-center">
-              <Pagination
-                current={currentPage}
-                total={filteredPosts.length}
-                pageSize={pageSize}
-                onChange={setCurrentPage}
-                showSizeChanger={false}
-                showQuickJumper
-                showTotal={(total, range) =>
-                  `${range[0]}-${range[1]} of ${total} posts`
-                }
-              />
-            </div>
-          )}
-        </>
+        myPosts
       )}
     </div>
   );

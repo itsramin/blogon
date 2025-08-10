@@ -36,29 +36,46 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
 
   const menuItems = [
     {
-      key: "/admin/feed",
-      icon: <LinkOutlined size={16} />,
-      label: <Link to="/admin/feed">Feed</Link>,
-    },
-    {
       key: "/admin",
       icon: <BarChartOutlined size={16} />,
       label: <Link to="/admin">Dashboard</Link>,
     },
+
     {
-      key: "/admin/posts",
-      icon: <FileTextOutlined size={16} />,
-      label: <Link to="/admin/posts">Posts</Link>,
+      type: "divider" as const,
     },
     {
-      key: "/admin/categories",
-      icon: <FolderOpenOutlined size={16} />,
-      label: <Link to="/admin/categories">Categories</Link>,
+      key: "content-management",
+      label: "Manage Blog",
+      type: "group" as const,
+      children: [
+        {
+          key: "/admin/posts",
+          icon: <FileTextOutlined size={16} />,
+          label: <Link to="/admin/posts">Posts</Link>,
+        },
+        {
+          key: "/admin/categories",
+          icon: <FolderOpenOutlined size={16} />,
+          label: <Link to="/admin/categories">Categories</Link>,
+        },
+        {
+          key: "/admin/tags",
+          icon: <TagOutlined size={16} />,
+          label: <Link to="/admin/tags">Tags</Link>,
+        },
+      ],
     },
     {
-      key: "/admin/tags",
-      icon: <TagOutlined size={16} />,
-      label: <Link to="/admin/tags">Tags</Link>,
+      type: "divider" as const,
+    },
+    {
+      key: "/admin/followings",
+      icon: <LinkOutlined size={16} />,
+      label: <Link to="/admin/followings">Followings</Link>,
+    },
+    {
+      type: "divider" as const,
     },
     {
       key: "/admin/settings",
@@ -79,7 +96,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
           <Menu
             mode="inline"
             selectedKeys={[location.pathname]}
-            defaultSelectedKeys={["/admin/feed"]}
+            defaultSelectedKeys={["/admin"]}
             className="border-none mt-4"
             items={menuItems}
           />
