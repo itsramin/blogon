@@ -19,6 +19,7 @@ import { Dashboard } from "./pages/Admin/Dashboard";
 import { PostList } from "./pages/Admin/Posts/PostList";
 import { PostEditor } from "./pages/Admin/Posts/PostEditor";
 import Followings from "./pages/Admin/Followings";
+import Settings from "./pages/Admin/Settings";
 
 const antTheme = {
   token: {
@@ -133,14 +134,7 @@ function App() {
               path="/admin/settings"
               element={
                 <AdminLayout>
-                  <div className="text-center py-12">
-                    <h2 className="text-2xl font-bold text-gray-800 mb-4">
-                      Settings
-                    </h2>
-                    <p className="text-gray-600">
-                      Settings panel will be implemented here.
-                    </p>
-                  </div>
+                  <Settings />
                 </AdminLayout>
               }
             />

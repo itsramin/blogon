@@ -399,9 +399,18 @@ export const xmlStorage = {
     return [...this.privateCache.tags];
   },
 
+  // In xmlStorage.ts, update the getBlogInfo method:
   async getBlogInfo(): Promise<BlogInfo> {
     await this.initialize();
-    return getDefaultBlogInfo();
+
+    try {
+      const xmlString = await loadFromGist();
+      const data = await this.importFromXML(xmlString);
+      return data.blogInfo;
+    } catch (error) {
+      console.error("Failed to load blog info from XML, using defaults", error);
+      return getDefaultBlogInfo();
+    }
   },
   async addPostsFromXML(xmlString: string): Promise<void> {
     try {
