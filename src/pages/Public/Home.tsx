@@ -3,7 +3,7 @@ import { Card, Typography, Input, Select, Pagination, Spin, Tabs } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 import PostCard from "../../components/PostCard";
 import { useAuth } from "../../context/AuthContext";
-import FollowedFeed from "../Admin/FollowedFeed";
+import Feeds from "../Admin/Feeds";
 import useFollowings from "../../hooks/useFollowings";
 import usePosts from "../../hooks/usePosts";
 
@@ -111,7 +111,7 @@ export const Home: React.FC = () => {
               label: "My posts",
               children: myPosts,
             },
-            { key: "feeds", label: "Followings", children: <FollowedFeed /> },
+            { key: "feeds", label: "Followings", children: <Feeds /> },
           ]}
         />
       ) : (

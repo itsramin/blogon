@@ -1,7 +1,15 @@
 import { useState, useEffect, useCallback } from "react";
 import { message } from "antd";
 import { blogStorage } from "../storage/blogStorage";
-import { fetchFeedPosts, isValidFeedUrl } from "../services/feedService";
+
+function isValidBlogUrl(url: string): boolean {
+  try {
+    new URL(url);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 function useFollowings() {
   const [loading, setLoading] = useState(true);
@@ -44,37 +52,37 @@ function useFollowings() {
     [feeds]
   );
 
+  // Modify the addFeed function
   const addFeed = useCallback(
     async (url: string) => {
       setLoading(true);
       setError(null);
       try {
         // Validate URL format
-        if (!isValidFeedUrl(url)) {
-          message.error("Please enter a valid RSS feed URL");
+        if (!isValidBlogUrl(url)) {
+          // Update this validation
+          message.error("Please enter a valid blog URL");
           return false;
         }
 
         // Check for duplicates
         if (feeds.includes(url)) {
-          message.warning("This feed is already in your subscriptions");
+          message.warning("You're already following this blog");
           return false;
         }
 
-        // Test the feed URL
-        await fetchFeedPosts(url);
+        // Subscribe using WebSub
+        const success = await blogStorage.subscribeToBlog(url);
+        if (!success) throw new Error("Subscription failed");
 
         const updatedFeeds = [...feeds, url];
-        await blogStorage.updateBlogInfo({ followedFeeds: updatedFeeds });
         setFeeds(updatedFeeds);
-        message.success("Feed added successfully");
+        message.success("Blog subscribed successfully");
         return true;
       } catch (err) {
-        console.error("Failed to add feed:", err);
-        setError("Failed to add feed");
-        message.error(
-          "Failed to fetch feed. Please check the URL and try again."
-        );
+        console.error("Failed to subscribe:", err);
+        setError("Failed to subscribe");
+        message.error("Failed to subscribe to blog");
         return false;
       } finally {
         setLoading(false);
@@ -82,6 +90,8 @@ function useFollowings() {
     },
     [feeds]
   );
+
+  // Add this helper function
 
   useEffect(() => {
     loadFollowedFeeds();

@@ -15,6 +15,8 @@ export interface BlogPost {
   url: string;
   link: string;
   number: number;
+  isExternal?: boolean; // Mark if post came via WebSub
+  source?: string;
 }
 
 export interface BlogInfo {
@@ -33,6 +35,8 @@ export interface BlogInfo {
     lastName: string;
   }>;
   followedFeeds?: string[];
+  followedBlogs?: string[];
+  subscriptions?: Subscription[];
 }
 
 export interface BlogData {
@@ -64,4 +68,14 @@ export interface AuthState {
   isAuthenticated: boolean;
   user: User | null;
   loading: boolean;
+}
+export interface Subscription {
+  targetUrl: string;
+  secret: string;
+  webhookUrl: string;
+}
+
+export interface WebhookPayload {
+  event: "post_published";
+  data: BlogPost;
 }

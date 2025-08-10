@@ -1,4 +1,4 @@
-import { BlogInfo, BlogPost, Category, Tag } from "../types";
+import { BlogInfo, BlogPost, Category, Tag, WebhookPayload } from "../types";
 import { loadFromGist, saveToGist } from "./gistService";
 import { importFromXML, exportToXML } from "./xmlParser";
 import { generateId, createSlug } from "./helpers";
@@ -14,6 +14,7 @@ class BlogStorage {
     categories: [] as Category[],
     tags: [] as Tag[],
     initialized: false,
+    blogInfo: getDefaultBlogInfo(),
   };
 
   async initialize(): Promise<void> {
@@ -80,6 +81,8 @@ class BlogStorage {
       link: post.link || `/post/${post.url || createSlug(post.title)}`,
     };
 
+    const isNewPost = existingIndex < 0;
+
     if (existingIndex >= 0) {
       this.cache.posts[existingIndex] = postToSave;
     } else {
@@ -92,6 +95,11 @@ class BlogStorage {
     try {
       const xml = await this.exportData();
       await saveToGist(xml);
+
+      // Notify subscribers if this is a new published post
+      if (isNewPost && postToSave.status === "published") {
+        await this.notifySubscribers(postToSave);
+      }
     } catch (error) {
       console.error("Failed to save to Gist:", error);
       throw error;
@@ -235,6 +243,139 @@ class BlogStorage {
   private async exportData(): Promise<string> {
     const blogInfo = await this.getBlogInfo();
     return exportToXML(blogInfo, this.cache.posts);
+  }
+
+  async subscribeToBlog(targetUrl: string): Promise<boolean> {
+    await this.initialize();
+
+    const secret = generateId();
+    const webhookUrl = `${window.location.origin}/api/webhook`;
+
+    // Check if already subscribed
+    if (this.cache.blogInfo.followedBlogs?.includes(targetUrl)) {
+      return true;
+    }
+
+    try {
+      // Register with target blog
+      const response = await fetch(`${targetUrl}/api/subscribe`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          webhookUrl,
+          secret,
+        }),
+      });
+
+      if (!response.ok) throw new Error("Subscription failed");
+
+      // Update local state
+      const updatedInfo = {
+        ...this.cache.blogInfo,
+        followedBlogs: [
+          ...(this.cache.blogInfo.followedBlogs || []),
+          targetUrl,
+        ],
+      };
+
+      await this.updateBlogInfo(updatedInfo);
+      return true;
+    } catch (error) {
+      console.error("Subscription failed:", error);
+      return false;
+    }
+  }
+
+  async handleWebhook(
+    sourceUrl: string,
+    payload: WebhookPayload,
+    secret: string
+  ): Promise<boolean> {
+    await this.initialize();
+
+    // Verify subscription exists
+    const subscription = this.cache.blogInfo.subscriptions?.find(
+      (sub) => sub.targetUrl === sourceUrl && sub.secret === secret
+    );
+
+    if (!subscription) return false;
+
+    // Process the event
+    if (payload.event === "post_published") {
+      await this.addExternalPost(payload.data);
+    }
+
+    return true;
+  }
+
+  private async addExternalPost(post: BlogPost): Promise<void> {
+    // Check if post already exists
+    if (this.cache.posts.some((p) => p.id === post.id)) return;
+
+    // Add source information
+    const enrichedPost = {
+      ...post,
+      isExternal: true,
+      source: new URL(post.link).hostname,
+    };
+
+    this.cache.posts.push(enrichedPost);
+    await this.exportData();
+  }
+
+  async handleSubscribe(
+    targetUrl: string,
+    webhookUrl: string,
+    secret: string
+  ): Promise<boolean> {
+    await this.initialize();
+
+    // Check if subscription already exists
+    const exists = this.cache.blogInfo.subscriptions?.some(
+      (sub) => sub.targetUrl === targetUrl
+    );
+
+    if (exists) return true;
+
+    // Add new subscription
+    const updatedInfo = {
+      ...this.cache.blogInfo,
+      subscriptions: [
+        ...(this.cache.blogInfo.subscriptions || []),
+        { targetUrl, webhookUrl, secret },
+      ],
+    };
+
+    await this.updateBlogInfo(updatedInfo);
+    return true;
+  }
+
+  async notifySubscribers(post: BlogPost): Promise<void> {
+    await this.initialize();
+
+    if (!this.cache.blogInfo.subscriptions?.length) return;
+
+    const payload: WebhookPayload = {
+      event: "post_published",
+      data: post,
+    };
+
+    await Promise.all(
+      this.cache.blogInfo.subscriptions.map(async (sub) => {
+        try {
+          await fetch(sub.webhookUrl, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-Webhook-Secret": sub.secret,
+            },
+            body: JSON.stringify(payload),
+          });
+        } catch (error) {
+          console.error(`Failed to notify ${sub.targetUrl}:`, error);
+        }
+      })
+    );
   }
 }
 
