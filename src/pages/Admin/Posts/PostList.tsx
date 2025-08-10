@@ -10,6 +10,7 @@ import {
   Typography,
   Input,
   Select,
+  Breakpoint,
 } from "antd";
 import { Link } from "react-router-dom";
 import { BlogPost } from "../../../types";
@@ -88,6 +89,7 @@ const PostList: React.FC = () => {
       dataIndex: "categories",
       key: "categories",
       width: 200,
+      responsive: ["md" as Breakpoint],
       render: (categories: string[] = []) => (
         <div>
           {categories.map((category) => (
@@ -103,6 +105,7 @@ const PostList: React.FC = () => {
       dataIndex: "author",
       key: "author",
       width: 150,
+      responsive: ["lg" as Breakpoint],
       render: (author: { firstName: string; lastName: string }) =>
         `${author.firstName} ${author.lastName}`,
     },
@@ -111,6 +114,7 @@ const PostList: React.FC = () => {
       dataIndex: "updatedAt",
       key: "updatedAt",
       width: 120,
+      responsive: ["lg" as Breakpoint],
       render: (date: string) => format(new Date(date), "MMM d, yyyy"),
     },
     {
@@ -155,9 +159,60 @@ const PostList: React.FC = () => {
     },
   ];
 
+  const content = (
+    <>
+      <div className="flex flex-col sm:flex-row gap-4 mb-6 px-2">
+        <SearchInput
+          placeholder="Search posts..."
+          prefix={<SearchOutlined size={16} />}
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="flex-1"
+          size="large"
+        />
+        <Select
+          value={selectedCategory}
+          onChange={setSelectedCategory}
+          size="large"
+          className="w-full sm:w-auto sm:min-w-[150px]"
+        >
+          <Select.Option value="all">All Categories</Select.Option>
+          {categories.map((category) => (
+            <Select.Option key={category.id} value={category.id}>
+              {category.name}
+            </Select.Option>
+          ))}
+        </Select>
+        <Select
+          value={statusFilter}
+          onChange={setStatusFilter}
+          size="large"
+          className="w-full sm:w-auto sm:min-w-[150px]"
+        >
+          <Select.Option value="all">All Status</Select.Option>
+          <Select.Option value="published">Published</Select.Option>
+          <Select.Option value="draft">Draft</Select.Option>
+        </Select>
+      </div>
+
+      <Table
+        columns={columns}
+        dataSource={filteredPosts}
+        rowKey="id"
+        loading={loading}
+        pagination={{
+          pageSize: 10,
+          showSizeChanger: true,
+          showQuickJumper: true,
+          showTotal: (total) => `Total ${total} posts`,
+        }}
+        className="overflow-x-auto"
+      />
+    </>
+  );
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
         <Title level={2} className="mb-0">
           Posts
         </Title>
@@ -168,55 +223,13 @@ const PostList: React.FC = () => {
         </Link>
       </div>
 
-      <Card className="shadow-sm">
-        <div className="flex flex-col sm:flex-row gap-4 mb-6">
-          <SearchInput
-            placeholder="Search posts..."
-            prefix={<SearchOutlined size={16} />}
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="flex-1"
-            size="large"
-          />
-          <Select
-            value={selectedCategory}
-            onChange={setSelectedCategory}
-            size="large"
-            style={{ width: 150 }}
-          >
-            <Select.Option value="all">All Categories</Select.Option>
-            {categories.map((category) => (
-              <Select.Option key={category.id} value={category.id}>
-                {category.name}
-              </Select.Option>
-            ))}
-          </Select>
-          <Select
-            value={statusFilter}
-            onChange={setStatusFilter}
-            size="large"
-            style={{ width: 150 }}
-          >
-            <Select.Option value="all">All Status</Select.Option>
-            <Select.Option value="published">Published</Select.Option>
-            <Select.Option value="draft">Draft</Select.Option>
-          </Select>
-        </div>
+      {/* Desktop view - with Card */}
+      <div className="hidden md:block">
+        <Card className="shadow-sm">{content}</Card>
+      </div>
 
-        <Table
-          columns={columns}
-          dataSource={filteredPosts}
-          rowKey="id"
-          loading={loading}
-          pagination={{
-            pageSize: 10,
-            showSizeChanger: true,
-            showQuickJumper: true,
-            showTotal: (total) => `Total ${total} posts`,
-          }}
-          className="overflow-x-auto"
-        />
-      </Card>
+      {/* Mobile view - without Card */}
+      <div className="block md:hidden">{content}</div>
     </div>
   );
 };

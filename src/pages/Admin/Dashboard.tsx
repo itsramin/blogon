@@ -57,11 +57,11 @@ export const Dashboard: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
         <Title level={2} className="mb-0">
           Dashboard
         </Title>
-        <div className="flex space-x-2">
+        <div className="flex flex-wrap gap-2">
           <Upload
             accept=".xml"
             beforeUpload={handleImport}
@@ -125,7 +125,9 @@ export const Dashboard: React.FC = () => {
                     <Link key="edit" to={`/admin/posts/edit/${post.id}`}>
                       <Button type="link" size="small">
                         <EditOutlined size={14} />
-                        Edit
+                        <span className="hidden sm:inline-block ml-1">
+                          Edit
+                        </span>
                       </Button>
                     </Link>,
                   ]}
@@ -149,19 +151,18 @@ export const Dashboard: React.FC = () => {
                       </div>
                     }
                     description={
-                      <div className="flex items-center space-x-4 text-sm text-gray-500">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 text-sm text-gray-500">
                         <span className="flex items-center">
                           <CalendarOutlined size={14} className="mr-1" />
                           {format(new Date(post.updatedAt), "MMM d, yyyy")}
                         </span>
-                        <span>
+                        <span className="hidden sm:inline-block">
                           by {post.author.firstName} {post.author.lastName}
                         </span>
                         {post.categories.length > 0 && (
-                          <span>in {post.categories.join(", ")}</span>
-                        )}
-                        {post.tags.length > 0 && (
-                          <span>tags: {post.tags.join(", ")}</span>
+                          <span className="hidden md:inline-block">
+                            in {post.categories.join(", ")}
+                          </span>
                         )}
                       </div>
                     }

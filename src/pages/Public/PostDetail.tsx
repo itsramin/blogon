@@ -117,17 +117,17 @@ const PostDetail: React.FC = () => {
             ))}
           </div>
 
-          <Title level={1} className="mb-4">
+          <Title level={1} className="mb-4 text-2xl sm:text-4xl">
             {post.title}
           </Title>
 
-          <div className="flex items-center justify-between flex-wrap gap-4">
-            <div className="flex items-center space-x-6 text-gray-500">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between flex-wrap gap-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center sm:space-x-6 text-gray-500">
               <span className="flex items-center">
                 <UserOutlined size={16} className="mr-2" />
                 {post.author.firstName} {post.author.lastName}
               </span>
-              <span className="flex items-center">
+              <span className="flex items-center mt-2 sm:mt-0">
                 <CalendarOutlined size={16} className="mr-2" />
                 {format(new Date(post.updatedAt), "MMMM d, yyyy")}
               </span>
@@ -137,6 +137,7 @@ const PostDetail: React.FC = () => {
               icon={<ExportOutlined size={16} />}
               onClick={handleShare}
               loading={loading}
+              className="mt-4 sm:mt-0"
             >
               Share
             </Button>
@@ -191,9 +192,9 @@ const PostDetail: React.FC = () => {
                       {relatedPost.title}
                     </Link>
                   </Title>
-                  <div className="flex items-center space-x-4 text-sm text-gray-500">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center sm:space-x-4 text-sm text-gray-500">
                     <span>{relatedPost.author.userName}</span>
-                    <span>
+                    <span className="mt-1 sm:mt-0">
                       {format(
                         new Date(
                           relatedPost.updatedAt || relatedPost.createdAt

@@ -13,7 +13,8 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
 
   return (
     <Card
-      className="shadow-sm hover:shadow-md transition-shadow duration-200 h-full"
+      className="shadow-sm hover:shadow-md transition-shadow duration-200 h-full flex flex-col"
+      styles={{ body: { flex: 1, display: "flex", flexDirection: "column" } }}
       style={{
         direction: "rtl",
         textAlign: "start",
@@ -30,19 +31,17 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
         </Title>
 
         <div
-          className="prose prose-lg max-w-none break-words"
+          className="prose prose-sm max-w-none break-words line-clamp-3"
           dangerouslySetInnerHTML={{ __html: post.content }}
           style={{
             lineHeight: "1.7",
-            fontSize: "16px",
+            fontSize: "14px",
           }}
         />
       </div>
 
-      <div
-        className={`flex items-center justify-between text-sm text-gray-500 pt-3 border-t border-gray-100 `}
-      >
-        <div className={`flex items-center`}>
+      <div className="flex items-center justify-between text-sm text-gray-500 mt-4 pt-3 border-t border-gray-100">
+        <div className="flex items-center">
           <CalendarOutlined size={14} className="px-1" />
           {format(new Date(post.updatedAt), "MMM d, yyyy")}
         </div>

@@ -59,7 +59,6 @@ export const Home: React.FC = () => {
                 pageSize={pageSize}
                 onChange={setCurrentPage}
                 showSizeChanger={false}
-                showQuickJumper
                 showTotal={(total, range) =>
                   `${range[0]}-${range[1]} of ${total} posts`
                 }
@@ -88,7 +87,7 @@ export const Home: React.FC = () => {
             value={selectedCategory}
             onChange={setSelectedCategory}
             size="large"
-            style={{ width: 200 }}
+            className="w-full sm:w-auto sm:min-w-[200px]"
             loading={loading}
           >
             <Select.Option value="all">All Categories</Select.Option>

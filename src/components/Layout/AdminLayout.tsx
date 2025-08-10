@@ -1,8 +1,8 @@
-import React from "react";
-import { Layout, Menu } from "antd";
+import React, { useState } from "react";
+import { Layout, Menu, Drawer, Button } from "antd";
 import { Link, useLocation, Navigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { Header } from "./Header";
+import { Header as AdminHeader } from "./Header";
 import {
   SettingOutlined,
   FolderOpenOutlined,
@@ -10,9 +10,10 @@ import {
   FileTextOutlined,
   TagOutlined,
   LinkOutlined,
+  MenuOutlined,
 } from "@ant-design/icons";
 
-const { Sider, Content } = Layout;
+const { Content } = Layout;
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -21,6 +22,8 @@ interface AdminLayoutProps {
 export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const location = useLocation();
   const { isAuthenticated, loading } = useAuth();
+  const [collapsed, setCollapsed] = useState(false);
+  const [drawerVisible, setDrawerVisible] = useState(false);
 
   if (loading) {
     return (
@@ -37,10 +40,9 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const menuItems = [
     {
       key: "/admin",
-      icon: <BarChartOutlined size={16} />,
+      icon: <BarChartOutlined />,
       label: <Link to="/admin">Dashboard</Link>,
     },
-
     {
       type: "divider" as const,
     },
@@ -51,17 +53,17 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       children: [
         {
           key: "/admin/posts",
-          icon: <FileTextOutlined size={16} />,
+          icon: <FileTextOutlined />,
           label: <Link to="/admin/posts">Posts</Link>,
         },
         {
           key: "/admin/categories",
-          icon: <FolderOpenOutlined size={16} />,
+          icon: <FolderOpenOutlined />,
           label: <Link to="/admin/categories">Categories</Link>,
         },
         {
           key: "/admin/tags",
-          icon: <TagOutlined size={16} />,
+          icon: <TagOutlined />,
           label: <Link to="/admin/tags">Tags</Link>,
         },
       ],
@@ -71,7 +73,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     },
     {
       key: "/admin/followings",
-      icon: <LinkOutlined size={16} />,
+      icon: <LinkOutlined />,
       label: <Link to="/admin/followings">Followings</Link>,
     },
     {
@@ -79,19 +81,35 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     },
     {
       key: "/admin/settings",
-      icon: <SettingOutlined size={16} />,
+      icon: <SettingOutlined />,
       label: <Link to="/admin/settings">Settings</Link>,
     },
   ];
 
+  const toggleDrawer = () => {
+    setDrawerVisible(!drawerVisible);
+  };
+
   return (
-    <Layout className="min-h-screen">
-      <Header />
+    <Layout className="min-h-screen relative">
+      <AdminHeader />
+      <div className="md:hidden absolute top-20 left-4 z-10">
+        <Button
+          type="primary"
+          icon={<MenuOutlined />}
+          onClick={toggleDrawer}
+          className="flex items-center justify-center"
+        />
+      </div>
       <Layout>
-        <Sider
+        {/* Desktop Sider */}
+        <Layout.Sider
           width={250}
-          className="bg-white border-r border-gray-200"
+          className="bg-white border-r border-gray-200 hidden md:block"
           theme="light"
+          collapsible
+          collapsed={collapsed}
+          onCollapse={(value) => setCollapsed(value)}
         >
           <Menu
             mode="inline"
@@ -100,9 +118,31 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
             className="border-none mt-4"
             items={menuItems}
           />
-        </Sider>
+        </Layout.Sider>
+
+        {/* Mobile Drawer */}
+        <Drawer
+          title="Menu"
+          placement="left"
+          onClose={toggleDrawer}
+          open={drawerVisible}
+          width={250}
+          styles={{ body: { padding: 0 } }}
+        >
+          <Menu
+            mode="inline"
+            selectedKeys={[location.pathname]}
+            defaultSelectedKeys={["/admin"]}
+            className="border-none"
+            items={menuItems}
+            onClick={toggleDrawer}
+          />
+        </Drawer>
+
         <Layout>
-          <Content className="bg-gray-50 p-6">{children}</Content>
+          <Content className="bg-gray-50 p-4 sm:p-6 md:ml-0">
+            {children}
+          </Content>
         </Layout>
       </Layout>
     </Layout>

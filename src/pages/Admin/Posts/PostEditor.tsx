@@ -145,20 +145,20 @@ const PostEditor: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center space-x-4">
           <Button
             icon={<ArrowLeftOutlined />}
             onClick={() => navigate("/admin/posts")}
           >
-            Back to Posts
+            Back
           </Button>
-          <Title level={2} className="mb-0">
+          <Title level={2} className="mb-0 text-center sm:text-left">
             {isEditing ? "Edit Post" : "New Post"}
           </Title>
         </div>
 
-        <Space>
+        <Space className="flex-wrap justify-center">
           <Button icon={<EyeOutlined />} onClick={handlePreview}>
             Preview
           </Button>
@@ -212,7 +212,7 @@ const PostEditor: React.FC = () => {
                 <Input size="large" placeholder="post-url" />
               </Form.Item>
 
-              <Form.Item label="Content" required>
+              <Form.Item label="Content" required className="h-full">
                 <RichTextEditor
                   value={content}
                   onChange={setContent}
