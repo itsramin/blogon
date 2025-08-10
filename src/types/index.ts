@@ -32,6 +32,7 @@ export interface BlogInfo {
     firstName: string;
     lastName: string;
   }>;
+  rssFeeds: string[];
 }
 
 export interface BlogData {
