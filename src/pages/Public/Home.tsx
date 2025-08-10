@@ -1,14 +1,5 @@
 import React, { useState } from "react";
-import {
-  Card,
-  Typography,
-  Input,
-  Select,
-  Pagination,
-  Spin,
-  Button,
-  Tabs,
-} from "antd";
+import { Card, Typography, Input, Select, Pagination, Spin, Tabs } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 import PostCard from "../../components/PostCard";
 import { useAuth } from "../../context/AuthContext";
@@ -23,7 +14,7 @@ export const Home: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 6;
   const { isAuthenticated } = useAuth();
-  const { feeds, addFeed } = useFollowings();
+  const { feeds } = useFollowings();
   const {
     posts: filteredPosts,
     loading,
@@ -84,14 +75,6 @@ export const Home: React.FC = () => {
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-16">
-      <Button
-        onClick={() => {
-          const url = `${window.location.origin}/feed.xml`;
-          addFeed(url);
-        }}
-      >
-        Follow Me
-      </Button>
       {/* Search and Filters */}
       <Card className="shadow-sm mb-8">
         <div className="flex flex-col sm:flex-row gap-4">
