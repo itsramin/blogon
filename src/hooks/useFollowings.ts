@@ -58,31 +58,34 @@ function useFollowings() {
       setLoading(true);
       setError(null);
       try {
-        // Validate URL format
         if (!isValidBlogUrl(url)) {
-          // Update this validation
           message.error("Please enter a valid blog URL");
           return false;
         }
 
-        // Check for duplicates
         if (feeds.includes(url)) {
           message.warning("You're already following this blog");
           return false;
         }
 
-        // Subscribe using WebSub
-        const success = await blogStorage.subscribeToBlog(url);
-        if (!success) throw new Error("Subscription failed");
+        try {
+          const success = await blogStorage.subscribeToBlog(url);
+          if (!success) throw new Error("Subscription failed");
 
-        const updatedFeeds = [...feeds, url];
-        setFeeds(updatedFeeds);
-        message.success("Blog subscribed successfully");
-        return true;
-      } catch (err) {
-        console.error("Failed to subscribe:", err);
-        setError("Failed to subscribe");
-        message.error("Failed to subscribe to blog");
+          const updatedFeeds = [...feeds, url];
+          setFeeds(updatedFeeds);
+          return true;
+        } catch (err: any) {
+          console.error("Subscription error:", err);
+          throw new Error(
+            err.message.includes("CORS")
+              ? "Could not subscribe (CORS issue). The blog may need to enable cross-origin requests."
+              : "Failed to subscribe to blog"
+          );
+        }
+      } catch (err: any) {
+        setError(err.message);
+        message.error(err.message);
         return false;
       } finally {
         setLoading(false);

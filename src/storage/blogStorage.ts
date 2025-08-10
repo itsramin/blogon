@@ -252,30 +252,32 @@ class BlogStorage {
     const webhookUrl = `${window.location.origin}/api/webhook`;
 
     try {
-      const response = await fetch(`${targetUrl}/api/subscribe`, {
+      // Normalize the target URL
+      const normalizedTarget = targetUrl.replace(/\/+$/, "");
+      const subscribeUrl = `${normalizedTarget}/api/subscribe`;
+
+      const response = await fetch(subscribeUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Origin: window.location.origin, // Send origin header
         },
         body: JSON.stringify({
           webhookUrl,
           secret,
         }),
-        mode: "cors", // Explicitly request CORS
       });
 
       if (!response.ok) {
-        throw new Error(`Subscription failed: ${response.statusText}`);
+        throw new Error(
+          `Subscription failed: ${response.status} ${response.statusText}`
+        );
       }
 
       // Update local state
+      const blogInfo = await this.getBlogInfo();
       const updatedInfo = {
-        ...this.cache.blogInfo,
-        followedBlogs: [
-          ...(this.cache.blogInfo.followedBlogs || []),
-          targetUrl,
-        ],
+        ...blogInfo,
+        followedBlogs: [...(blogInfo.followedBlogs || []), targetUrl],
       };
 
       await this.updateBlogInfo(updatedInfo);
