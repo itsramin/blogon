@@ -3,7 +3,6 @@ import {
   Card,
   Row,
   Col,
-  Statistic,
   List,
   Typography,
   Tag,
@@ -24,6 +23,7 @@ import {
   UploadOutlined,
 } from "@ant-design/icons";
 import { format } from "date-fns";
+import StatCard from "../../components/StatCard";
 
 const { Title } = Typography;
 
@@ -63,22 +63,6 @@ export const Dashboard: React.FC = () => {
       .slice(0, 5);
     setRecentPosts(recent);
   };
-
-  const StatCard: React.FC<{
-    title: string;
-    value: number;
-    icon: React.ReactNode;
-    color: string;
-  }> = ({ title, value, icon, color }) => (
-    <Card className="shadow-sm">
-      <Statistic
-        title={title}
-        value={value}
-        prefix={<div className={`text-${color}-600`}>{icon}</div>}
-        valueStyle={{ color: `var(--ant-color-${color}-6)` }}
-      />
-    </Card>
-  );
 
   const handleImport = async (file: File) => {
     const reader = new FileReader();

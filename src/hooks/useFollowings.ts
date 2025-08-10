@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { xmlStorage } from "../utils/xmlStorage";
 import { message } from "antd";
+import { fetchFeedPosts, isValidFeedUrl } from "../services/feedService";
 
 function useFollowings() {
   const [loading, setLoading] = useState(true);
@@ -31,7 +32,35 @@ function useFollowings() {
     loadFollowedPosts();
   };
 
-  return { feeds, loading, removeFeed };
+  const addFeed = async (url: string) => {
+    try {
+      if (!isValidFeedUrl(url)) {
+        message.error("Please enter a valid RSS feed URL");
+        return;
+      }
+
+      if (feeds.includes(url)) {
+        message.warning("This feed is already in your subscriptions");
+        return;
+      }
+
+      try {
+        // Test the feed URL
+        await fetchFeedPosts(url);
+
+        const updatedFeeds = [...feeds, url];
+        await xmlStorage.updateBlogInfo({ followedFeeds: updatedFeeds });
+      } catch (error) {
+        message.error(
+          "Failed to fetch feed. Please check the URL and try again."
+        );
+      }
+    } catch (error) {
+      console.error("Validation failed:", error);
+    }
+  };
+
+  return { feeds, loading, removeFeed, addFeed };
 }
 
 export default useFollowings;

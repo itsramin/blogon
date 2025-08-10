@@ -6,14 +6,11 @@ import {
   Select,
   Pagination,
   Spin,
-  message,
   Button,
   Tabs,
 } from "antd";
-import { xmlStorage } from "../../utils/xmlStorage";
 import { SearchOutlined } from "@ant-design/icons";
 import PostCard from "../../components/PostCard";
-import { fetchFeedPosts, isValidFeedUrl } from "../../services/feedService";
 import { useAuth } from "../../context/AuthContext";
 import FollowedFeed from "../Admin/FollowedFeed";
 import useFollowings from "../../hooks/useFollowings";
@@ -29,7 +26,7 @@ export const Home: React.FC = () => {
 
   const pageSize = 6;
   const { isAuthenticated } = useAuth();
-  const { feeds } = useFollowings();
+  const { feeds, addFeed } = useFollowings();
   const { posts, loading, categories } = usePosts();
 
   const filteredPosts = posts.filter((post) => {
@@ -45,34 +42,6 @@ export const Home: React.FC = () => {
     (currentPage - 1) * pageSize,
     currentPage * pageSize
   );
-
-  const handleAddFeed = async (url: string) => {
-    try {
-      if (!isValidFeedUrl(url)) {
-        message.error("Please enter a valid RSS feed URL");
-        return;
-      }
-
-      if (feeds.includes(url)) {
-        message.warning("This feed is already in your subscriptions");
-        return;
-      }
-
-      try {
-        // Test the feed URL
-        await fetchFeedPosts(url);
-
-        const updatedFeeds = [...feeds, url];
-        await xmlStorage.updateBlogInfo({ followedFeeds: updatedFeeds });
-      } catch (error) {
-        message.error(
-          "Failed to fetch feed. Please check the URL and try again."
-        );
-      }
-    } catch (error) {
-      console.error("Validation failed:", error);
-    }
-  };
 
   const myPosts = (
     <>
@@ -122,7 +91,7 @@ export const Home: React.FC = () => {
       <Button
         onClick={() => {
           const url = `${window.location.origin}/feed.xml`;
-          handleAddFeed(url);
+          addFeed(url);
         }}
       >
         Follow Me

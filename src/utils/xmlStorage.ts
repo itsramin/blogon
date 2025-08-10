@@ -448,37 +448,7 @@ export const xmlStorage = {
       throw error;
     }
   },
-  // Add to xmlStorage object
-  async generateRSSFeed(): Promise<string> {
-    await this.initialize();
-    const publishedPosts = await this.getPublishedPosts();
 
-    let rss = `<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0">
-<channel>
-  <title>${getDefaultBlogInfo().title}</title>
-  <link>${getDefaultBlogInfo().domain}</link>
-  <description>${getDefaultBlogInfo().shortDescription}</description>
-  <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
-`;
-
-    publishedPosts.forEach((post) => {
-      rss += `
-  <item>
-    <title>${this.escapeXml(post.title)}</title>
-    <link>${post.link}</link>
-    <guid>${post.id}</guid>
-    <pubDate>${new Date(post.createdAt).toUTCString()}</pubDate>
-    <description><![CDATA[${post.content.substring(0, 200)}...]]></description>
-    <author>${post.author.userName}</author>
-  </item>`;
-    });
-
-    rss += `
-</channel>
-</rss>`;
-    return rss;
-  },
   async updateBlogInfo(updates: Partial<BlogInfo>): Promise<void> {
     await this.initialize();
 
