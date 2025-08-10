@@ -64,13 +64,3 @@ export interface AuthState {
   user: User | null;
   loading: boolean;
 }
-export interface Subscription {
-  targetUrl: string;
-  secret: string;
-  webhookUrl: string;
-}
-
-export interface WebhookPayload {
-  event: "post_published";
-  data: BlogPost;
-}

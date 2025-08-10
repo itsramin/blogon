@@ -21,6 +21,7 @@ import PostDetail from "./pages/Public/PostDetail";
 import PostList from "./pages/Admin/Posts/PostList";
 import TagsPage from "./pages/Admin/Tags";
 import CategoriesPage from "./pages/Admin/Categories";
+import Followings from "./pages/Admin/Followings";
 
 const antTheme = {
   token: {
@@ -128,7 +129,7 @@ function App() {
               path="/admin/followings"
               element={
                 <AdminLayout>
-                  <></>
+                  <Followings />
                 </AdminLayout>
               }
             />
