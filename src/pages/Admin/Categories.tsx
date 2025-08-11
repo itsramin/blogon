@@ -1,7 +1,18 @@
 import React, { useState } from "react";
 import { Table, Button, Input, Modal, Form, Space } from "antd";
-import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
+import {
+  CheckOutlined,
+  CloseOutlined,
+  DeleteOutlined,
+  EditOutlined,
+  PlusOutlined,
+} from "@ant-design/icons";
 import useTaxonomy from "../../hooks/useTaxonomy";
+
+interface CatItem {
+  key: string;
+  name: string;
+}
 
 const CategoriesPage: React.FC = () => {
   const {
@@ -14,53 +25,94 @@ const CategoriesPage: React.FC = () => {
   } = useTaxonomy();
   const [form] = Form.useForm();
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<string | null>(null);
+  const [editingKey, setEditingKey] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState("");
+
+  const catItems: CatItem[] = categories.map((cat) => ({
+    key: cat,
+    name: cat,
+  }));
 
   const columns = [
     {
       title: "Name",
       dataIndex: "name",
       key: "name",
-    },
-    {
-      title: "Slug",
-      dataIndex: "slug",
-      key: "slug",
+      render: (text: string, record: CatItem) => {
+        if (editingKey === record.key) {
+          return (
+            <Input
+              value={editValue}
+              onChange={(e) => setEditValue(e.target.value)}
+              autoFocus
+            />
+          );
+        }
+        return text;
+      },
     },
     {
       title: "Actions",
       key: "actions",
-      render: (_: any, record: any) => (
-        <Space size="middle">
-          <Button
-            icon={<EditOutlined />}
-            onClick={() => handleEdit(record)}
-            size="small"
-          />
-          <Button
-            icon={<DeleteOutlined />}
-            onClick={() => handleDelete(record.id)}
-            danger
-            size="small"
-          />
-        </Space>
-      ),
+      render: (_: any, record: CatItem) => {
+        if (editingKey === record.key) {
+          return (
+            <Space size="middle">
+              <Button
+                icon={<CheckOutlined />}
+                onClick={() => handleSave(record)}
+                type="primary"
+                size="small"
+              />
+              <Button
+                icon={<CloseOutlined />}
+                onClick={() => setEditingKey(null)}
+                size="small"
+              />
+            </Space>
+          );
+        }
+        return (
+          <Space size="middle">
+            <Button
+              icon={<EditOutlined />}
+              onClick={() => handleEdit(record)}
+              size="small"
+            />
+            <Button
+              icon={<DeleteOutlined />}
+              onClick={() => handleDelete(record)}
+              danger
+              size="small"
+            />
+          </Space>
+        );
+      },
     },
   ];
 
   const handleAdd = () => {
-    form.resetFields();
-    setEditingCategory(null);
     setIsModalVisible(true);
   };
 
-  const handleEdit = (category: any) => {
-    form.setFieldsValue({ name: category.name });
-    setEditingCategory(category.id);
-    setIsModalVisible(true);
+  const handleEdit = (record: CatItem) => {
+    setEditingKey(record.key);
+    setEditValue(record.name);
   };
 
-  const handleDelete = async (id: string) => {
+  const handleSave = async (record: CatItem) => {
+    if (!editValue.trim()) return;
+
+    try {
+      await updateCategory(record.name, editValue);
+      setEditingKey(null);
+      refreshCategories();
+    } catch (error) {
+      console.error("Failed to update category:", error);
+    }
+  };
+
+  const handleDelete = async (record: CatItem) => {
     Modal.confirm({
       title: "Delete Category",
       content: "Are you sure you want to delete this category?",
@@ -68,21 +120,18 @@ const CategoriesPage: React.FC = () => {
       okType: "danger",
       cancelText: "Cancel",
       onOk: async () => {
-        await deleteCategory(id);
+        await deleteCategory(record.name);
         refreshCategories();
       },
     });
   };
 
-  const handleSubmit = async () => {
+  const handleAddSubmit = async () => {
     try {
       const values = await form.validateFields();
-      if (editingCategory) {
-        await updateCategory(editingCategory, values.name);
-      } else {
-        await addCategory(values.name);
-      }
+      await addCategory(values.name);
       setIsModalVisible(false);
+      form.resetFields();
       refreshCategories();
     } catch (error) {
       console.error("Validation failed:", error);
@@ -100,16 +149,16 @@ const CategoriesPage: React.FC = () => {
 
       <Table
         columns={columns}
-        dataSource={categories}
-        rowKey="id"
+        dataSource={catItems}
+        rowKey="key"
         loading={loading}
         pagination={false}
       />
 
       <Modal
-        title={editingCategory ? "Edit Category" : "Add Category"}
+        title={"Add Category"}
         open={isModalVisible}
-        onOk={handleSubmit}
+        onOk={handleAddSubmit}
         onCancel={() => setIsModalVisible(false)}
       >
         <Form form={form} layout="vertical">

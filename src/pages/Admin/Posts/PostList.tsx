@@ -11,6 +11,7 @@ import {
   Input,
   Select,
   Breakpoint,
+  Upload,
 } from "antd";
 import { Link } from "react-router-dom";
 import { BlogPost } from "../../../types";
@@ -20,9 +21,11 @@ import {
   EyeOutlined,
   PlusOutlined,
   SearchOutlined,
+  UploadOutlined,
 } from "@ant-design/icons";
 import { format } from "date-fns";
 import usePosts from "../../../hooks/usePosts";
+import useTaxonomy from "../../../hooks/useTaxonomy";
 
 const { Title } = Typography;
 const { Search: SearchInput } = Input;
@@ -34,17 +37,25 @@ const PostList: React.FC = () => {
     searchTerm,
     setSearchTerm,
     refreshPosts,
-    categories,
-    selectedCategory,
-    setSelectedCategory,
     deletePost,
+    addPostsFromXML,
   } = usePosts();
+  const { tags, categories } = useTaxonomy();
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [selectedCat, setSelectedCat] = useState<string>("all");
 
   const filteredPosts = posts.filter((post) => {
     const matchesStatus =
       statusFilter === "all" || post.status === statusFilter;
-    return matchesStatus;
+    const matchesCategory =
+      selectedCat === "all" ||
+      (post.categories && post.categories.includes(selectedCat));
+    const matchesTags =
+      selectedTags.length === 0 ||
+      (post.tags && selectedTags.some((tag) => post.tags.includes(tag)));
+
+    return matchesStatus && matchesCategory && matchesTags;
   });
 
   const handleDelete = async (id: string) => {
@@ -54,6 +65,19 @@ const PostList: React.FC = () => {
     } catch (error) {
       message.error("Failed to delete post");
     }
+  };
+  const handleImport = async (file: File) => {
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      try {
+        const content = e.target?.result as string;
+        await addPostsFromXML(content);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    reader.readAsText(file);
+    return false;
   };
 
   const columns = [
@@ -86,7 +110,7 @@ const PostList: React.FC = () => {
     },
     {
       title: "Categories",
-      dataIndex: "categories",
+      dataIndex: "categories", // This is correct if your BlogPost has categories array
       key: "categories",
       width: 200,
       responsive: ["md" as Breakpoint],
@@ -101,13 +125,20 @@ const PostList: React.FC = () => {
       ),
     },
     {
-      title: "Author",
-      dataIndex: "author",
-      key: "author",
+      title: "Tags",
+      dataIndex: "tags", // Changed from "tag" to "tags"
+      key: "tags",
       width: 150,
       responsive: ["lg" as Breakpoint],
-      render: (author: { firstName: string; lastName: string }) =>
-        `${author.firstName} ${author.lastName}`,
+      render: (tags: string[] = []) => (
+        <div>
+          {tags.map((tag) => (
+            <Tag key={tag} color="blue" className="mb-1">
+              {tag}
+            </Tag>
+          ))}
+        </div>
+      ),
     },
     {
       title: "Updated",
@@ -171,15 +202,15 @@ const PostList: React.FC = () => {
           size="large"
         />
         <Select
-          value={selectedCategory}
-          onChange={setSelectedCategory}
+          value={selectedCat}
+          onChange={setSelectedCat}
           size="large"
           className="w-full sm:w-auto sm:min-w-[150px]"
         >
           <Select.Option value="all">All Categories</Select.Option>
           {categories.map((category) => (
-            <Select.Option key={category.id} value={category.id}>
-              {category.name}
+            <Select.Option key={category} value={category}>
+              {category}
             </Select.Option>
           ))}
         </Select>
@@ -192,6 +223,21 @@ const PostList: React.FC = () => {
           <Select.Option value="all">All Status</Select.Option>
           <Select.Option value="published">Published</Select.Option>
           <Select.Option value="draft">Draft</Select.Option>
+        </Select>
+        <Select
+          mode="multiple"
+          placeholder="Filter by tags"
+          value={selectedTags}
+          onChange={setSelectedTags}
+          size="large"
+          className="w-full sm:w-auto sm:min-w-[200px]"
+          allowClear
+        >
+          {tags.map((tag) => (
+            <Select.Option key={tag} value={tag}>
+              {tag}
+            </Select.Option>
+          ))}
         </Select>
       </div>
 
@@ -216,11 +262,24 @@ const PostList: React.FC = () => {
         <Title level={2} className="mb-0">
           Posts
         </Title>
-        <Link to="/admin/posts/new">
-          <Button type="primary" size="large" icon={<PlusOutlined size={16} />}>
-            New Post
-          </Button>
-        </Link>
+        <div className="flex flex-wrap items-center gap-2">
+          <Upload
+            accept=".xml"
+            beforeUpload={handleImport}
+            showUploadList={false}
+          >
+            <Button icon={<UploadOutlined />}>Import XML</Button>
+          </Upload>
+          <Link to="/admin/posts/new">
+            <Button
+              type="primary"
+              size="large"
+              icon={<PlusOutlined size={16} />}
+            >
+              New Post
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {/* Desktop view - with Card */}

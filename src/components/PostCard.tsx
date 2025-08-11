@@ -1,8 +1,8 @@
 import { Card, Tag, Typography } from "antd";
 import { Link } from "react-router-dom";
 import { CalendarOutlined } from "@ant-design/icons";
-import { format } from "date-fns";
 import { BlogPost } from "../types";
+import { formatIranianDate } from "../util/dateFormatter";
 
 interface PostCardProps {
   post: BlogPost;
@@ -43,7 +43,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
       <div className="flex items-center justify-between text-sm text-gray-500 mt-4 pt-3 border-t border-gray-100">
         <div className="flex items-center">
           <CalendarOutlined size={14} className="px-1" />
-          {format(new Date(post.updatedAt), "MMM d, yyyy")}
+          {formatIranianDate(post.updatedAt)}
         </div>
         <div>
           {post.categories?.map((category) => (

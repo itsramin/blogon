@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Card, Row, Col, List, Typography, Tag, Button, Upload } from "antd";
+import { Card, Row, Col, List, Typography, Tag, Button } from "antd";
 import { Link } from "react-router-dom";
 import {
   CalendarOutlined,
@@ -7,7 +7,6 @@ import {
   EyeOutlined,
   FileTextOutlined,
   LineChartOutlined,
-  UploadOutlined,
 } from "@ant-design/icons";
 import { format } from "date-fns";
 import StatCard from "../../components/StatCard";
@@ -16,7 +15,7 @@ import usePosts from "../../hooks/usePosts";
 const { Title } = Typography;
 
 export const Dashboard: React.FC = () => {
-  const { posts, addPostsFromXML } = usePosts();
+  const { posts } = usePosts();
   const [stats, setStats] = useState({
     totalPosts: 0,
     publishedPosts: 0,
@@ -35,19 +34,6 @@ export const Dashboard: React.FC = () => {
     });
   }, [posts]);
 
-  const handleImport = async (file: File) => {
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-      try {
-        const content = e.target?.result as string;
-        await addPostsFromXML(content);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-    reader.readAsText(file);
-    return false;
-  };
   const recentPosts = posts
     .sort(
       (a, b) =>
@@ -61,21 +47,13 @@ export const Dashboard: React.FC = () => {
         <Title level={2} className="mb-0">
           Dashboard
         </Title>
-        <div className="flex flex-wrap gap-2">
-          <Upload
-            accept=".xml"
-            beforeUpload={handleImport}
-            showUploadList={false}
-          >
-            <Button icon={<UploadOutlined />}>Import XML</Button>
-          </Upload>
-          <Button type="primary" size="large">
-            <Link to="/admin/posts/new" className="text-white">
-              <FileTextOutlined size={16} className="mr-2" />
-              New Post
-            </Link>
-          </Button>
-        </div>
+
+        <Button type="primary" size="large">
+          <Link to="/admin/posts/new" className="text-white">
+            <FileTextOutlined size={16} className="mr-2" />
+            New Post
+          </Link>
+        </Button>
       </div>
 
       <Row gutter={[16, 16]}>

@@ -9,7 +9,7 @@ import {
   BarChartOutlined,
   FileTextOutlined,
   TagOutlined,
-  LinkOutlined,
+  // LinkOutlined,
   MenuOutlined,
   EyeOutlined,
   LogoutOutlined,
@@ -75,14 +75,14 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         },
       ],
     },
-    {
-      type: "divider" as const,
-    },
-    {
-      key: "/admin/followings",
-      icon: <LinkOutlined />,
-      label: <Link to="/admin/followings">Followings</Link>,
-    },
+    // {
+    //   type: "divider" as const,
+    // },
+    // {
+    //   key: "/admin/followings",
+    //   icon: <LinkOutlined />,
+    //   label: <Link to="/admin/followings">Followings</Link>,
+    // },
     {
       type: "divider" as const,
     },

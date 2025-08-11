@@ -40,19 +40,6 @@ export interface BlogData {
   posts: BlogPost[];
 }
 
-export interface Category {
-  id: string;
-  name: string;
-  slug: string;
-  description?: string;
-}
-
-export interface Tag {
-  id: string;
-  name: string;
-  slug: string;
-}
-
 export interface User {
   id: string;
   username: string;

@@ -21,6 +21,7 @@ import {
   SaveOutlined,
 } from "@ant-design/icons";
 import usePosts from "../../../hooks/usePosts";
+import useTaxonomy from "../../../hooks/useTaxonomy";
 
 const { Title } = Typography;
 
@@ -32,7 +33,8 @@ const PostEditor: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
 
   const { blogInfo } = useBlog();
-  const { categories, refreshPosts, getPostById, savePost } = usePosts();
+  const { refreshPosts, getPostById, savePost } = usePosts();
+  const { categories } = useTaxonomy();
 
   const [loading, setLoading] = useState(false);
 
@@ -189,8 +191,8 @@ const PostEditor: React.FC = () => {
           placeholder="Select categories"
           loading={loading}
           options={categories.map((cat) => ({
-            value: cat.name,
-            label: cat.name,
+            value: cat,
+            label: cat,
           }))}
         />
       </Form.Item>

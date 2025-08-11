@@ -1,10 +1,9 @@
 import { useEffect, useState, useCallback } from "react";
-import { message } from "antd";
 import { blogStorage } from "../storage/blogStorage";
-import { Category } from "../types";
 
 function useTaxonomy() {
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [tags, setTags] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -17,7 +16,19 @@ function useTaxonomy() {
     } catch (err) {
       console.error("Failed to load categories:", err);
       setError("Failed to load categories");
-      message.error("Failed to load categories");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+  const loadTags = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const loadedTags = await blogStorage.getAllTags();
+      setTags(loadedTags);
+    } catch (err) {
+      console.error("Failed to load tags:", err);
+      setError("Failed to load tags");
     } finally {
       setLoading(false);
     }
@@ -27,60 +38,90 @@ function useTaxonomy() {
     setLoading(true);
     setError(null);
     try {
-      const newCategory = {
-        id: Date.now().toString(),
-        name,
-        slug: name.toLowerCase().replace(/\s+/g, "-"),
-      };
-
-      // In a real implementation, this would be saved to storage
-      // For now, we'll update local state
-      setCategories((prev) => [...prev, newCategory]);
-      message.success(`Category "${name}" added successfully`);
+      await blogStorage.addCategory(name);
+      const updatedCategories = await blogStorage.getAllCategories();
+      setCategories(updatedCategories);
     } catch (error) {
       console.error("Failed to add category:", error);
       setError("Failed to add category");
-      message.error("Failed to add category");
     } finally {
       setLoading(false);
     }
   }, []);
 
-  const updateCategory = useCallback(async (id: string, newName: string) => {
-    setLoading(true);
-    setError(null);
-    try {
-      setCategories((prev) =>
-        prev.map((cat) =>
-          cat.id === id
-            ? {
-                ...cat,
-                name: newName,
-                slug: newName.toLowerCase().replace(/\s+/g, "-"),
-              }
-            : cat
-        )
-      );
-      message.success("Category updated successfully");
-    } catch (error) {
-      console.error("Failed to update category:", error);
-      setError("Failed to update category");
-      message.error("Failed to update category");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const updateCategory = useCallback(
+    async (oldName: string, newName: string) => {
+      setLoading(true);
+      setError(null);
+      try {
+        await blogStorage.updateCategory(oldName, newName);
+        const updatedCategories = await blogStorage.getAllCategories();
+        setCategories(updatedCategories);
+      } catch (error) {
+        console.error("Failed to update category:", error);
+        setError("Failed to update category");
+      } finally {
+        setLoading(false);
+      }
+    },
+    []
+  );
 
-  const deleteCategory = useCallback(async (id: string) => {
+  const deleteCategory = useCallback(async (name: string) => {
     setLoading(true);
     setError(null);
     try {
-      setCategories((prev) => prev.filter((cat) => cat.id !== id));
-      message.success("Category deleted successfully");
+      await blogStorage.deleteCategory(name);
+      const updatedCategories = await blogStorage.getAllCategories();
+      setCategories(updatedCategories);
     } catch (error) {
       console.error("Failed to delete category:", error);
       setError("Failed to delete category");
-      message.error("Failed to delete category");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const addTag = useCallback(async (name: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      await blogStorage.addTag(name);
+      const updatedTags = await blogStorage.getAllTags();
+      setTags(updatedTags);
+    } catch (error) {
+      console.error("Failed to add Tag:", error);
+      setError("Failed to add Tag");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const updateTag = useCallback(async (oldName: string, newName: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      await blogStorage.updateTag(oldName, newName);
+      const updatedTags = await blogStorage.getAllTags();
+      setTags(updatedTags);
+    } catch (error) {
+      console.error("Failed to update tag:", error);
+      setError("Failed to update tag");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const deleteTag = useCallback(async (name: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      await blogStorage.deleteTag(name);
+      const updatedTags = await blogStorage.getAllTags();
+      setTags(updatedTags);
+    } catch (error) {
+      console.error("Failed to delete tag:", error);
+      setError("Failed to delete tag");
     } finally {
       setLoading(false);
     }
@@ -88,16 +129,22 @@ function useTaxonomy() {
 
   useEffect(() => {
     loadCategories();
-  }, [loadCategories]);
+    loadTags();
+  }, [loadCategories, loadTags]);
 
   return {
     categories,
+    tags,
     loading,
     error,
     addCategory,
     updateCategory,
     deleteCategory,
+    addTag,
+    updateTag,
+    deleteTag,
     refreshCategories: loadCategories,
+    refreshTags: loadTags,
   };
 }
 

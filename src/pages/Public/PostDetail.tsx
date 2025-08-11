@@ -1,39 +1,33 @@
 import React, { useEffect, useState } from "react";
-import { Typography, Tag, Card, Button, message } from "antd";
+import { Typography, Tag, Card, Button, message, Divider } from "antd";
 import { useParams, Link } from "react-router-dom";
 import { BlogPost } from "../../types";
-import {
-  CalendarOutlined,
-  ExportOutlined,
-  UserOutlined,
-} from "@ant-design/icons";
-import { format } from "date-fns";
+import { CalendarOutlined } from "@ant-design/icons";
 import usePosts from "../../hooks/usePosts";
+import { formatIranianDate } from "../../util/dateFormatter";
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 
 const PostDetail: React.FC = () => {
   const { slug } = useParams();
   const [post, setPost] = useState<BlogPost | null>(null);
   const [relatedPosts, setRelatedPosts] = useState<BlogPost[]>([]);
-  const { allPosts, loading } = usePosts();
+  const { posts, loading } = usePosts();
 
   useEffect(() => {
     if (slug) {
       loadPost(slug);
     }
-  }, [slug, allPosts]);
+  }, [slug, posts]);
 
   const loadPost = async (postUrl: string) => {
     try {
-      // Find post by URL from the already loaded posts
-      const foundPost = allPosts.find((p) => p.url === postUrl);
+      const foundPost = posts.find((p) => p.url === postUrl);
 
       if (foundPost && foundPost.status === "published") {
         setPost(foundPost);
 
-        // Load related posts
-        const related = allPosts
+        const related = posts
           .filter((p) => p.id !== foundPost.id && p.status === "published")
           .filter((p) =>
             p.categories?.some((cat) => foundPost.categories?.includes(cat))
@@ -47,31 +41,9 @@ const PostDetail: React.FC = () => {
     }
   };
 
-  const handleShare = () => {
-    if (navigator.share) {
-      navigator
-        .share({
-          title: post?.title,
-          text: post?.content?.substring(0, 100) || "Check out this post",
-          url: post?.link || window.location.href,
-        })
-        .catch(() => {
-          // Fallback if share fails
-          copyToClipboard();
-        });
-    } else {
-      copyToClipboard();
-    }
-  };
-
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(post?.link || window.location.href);
-    message.success("Link copied to clipboard!");
-  };
-
   if (loading && !post) {
     return (
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-4xl mx-auto px-4 py-12">
         <Card loading={true} />
       </div>
     );
@@ -79,7 +51,7 @@ const PostDetail: React.FC = () => {
 
   if (!post) {
     return (
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-4xl mx-auto px-4 py-12">
         <Card>
           <Title level={3}>Post not found</Title>
           <p>The post you're looking for doesn't exist or isn't published.</p>
@@ -106,108 +78,111 @@ const PostDetail: React.FC = () => {
       <meta property="og:type" content="article" />
       {post.link && <meta property="og:url" content={post.link} />}
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Post Header */}
-        <Card className="shadow-sm mb-8">
-          <div className="mb-4">
-            {post.categories?.map((category) => (
-              <Tag key={category} color="blue" className="mb-2">
-                {category}
-              </Tag>
-            ))}
-          </div>
+      <div
+        className="max-w-4xl mx-auto px-4 py-8 "
+        style={{
+          direction: "rtl",
+          textAlign: "start",
+        }}
+      >
+        <Card className="shadow-sm">
+          {/* Post Header */}
+          <div className="mb-6">
+            <Title level={1} className="mb-4 text-2xl sm:text-3xl md:text-4xl">
+              {post.title}
+            </Title>
 
-          <Title level={1} className="mb-4 text-2xl sm:text-4xl">
-            {post.title}
-          </Title>
-
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between flex-wrap gap-4">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center sm:space-x-6 text-gray-500">
-              <span className="flex items-center">
-                <UserOutlined size={16} className="mr-2" />
-                {post.author.firstName} {post.author.lastName}
-              </span>
-              <span className="flex items-center mt-2 sm:mt-0">
-                <CalendarOutlined size={16} className="mr-2" />
-                {format(new Date(post.updatedAt), "MMMM d, yyyy")}
-              </span>
+            <div className="flex items-center text-gray-500">
+              <CalendarOutlined className="mx-2" />
+              <Text>{formatIranianDate(post.updatedAt || post.createdAt)}</Text>
             </div>
-
-            <Button
-              icon={<ExportOutlined size={16} />}
-              onClick={handleShare}
-              loading={loading}
-              className="mt-4 sm:mt-0"
-            >
-              Share
-            </Button>
           </div>
-        </Card>
 
-        {/* Post Content */}
-        <Card className="shadow-sm mb-8">
+          <Divider className="my-6" />
+
+          {/* Post Content */}
           <div
-            className="prose prose-lg max-w-none"
+            className="prose prose-lg max-w-none mb-8"
             dangerouslySetInnerHTML={{ __html: post.content }}
             style={{
               lineHeight: "1.7",
               fontSize: "16px",
             }}
           />
-        </Card>
 
-        {/* Tags */}
-        {post.tags?.length > 0 && (
-          <Card className="shadow-sm mb-8">
-            <Title level={4} className="mb-4">
-              Tags
-            </Title>
-            <div className="flex flex-wrap gap-2">
-              {post.tags.map((tag) => (
-                <Tag key={tag} color="purple">
-                  {tag}
-                </Tag>
-              ))}
-            </div>
-          </Card>
-        )}
-
-        {/* Related Posts */}
-        {relatedPosts.length > 0 && (
-          <Card className="shadow-sm">
-            <Title level={3} className="mb-6">
-              Related Posts
-            </Title>
-            <div className="space-y-4">
-              {relatedPosts.map((relatedPost) => (
-                <div
-                  key={relatedPost.id}
-                  className="border-b border-gray-100 pb-4 last:border-b-0"
-                >
-                  <Title level={5} className="mb-2">
-                    <Link
-                      to={`/post/${relatedPost.url}`}
-                      className="text-gray-800 hover:text-blue-600 transition-colors"
-                    >
-                      {relatedPost.title}
-                    </Link>
-                  </Title>
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center sm:space-x-4 text-sm text-gray-500">
-                    <span>{relatedPost.author.userName}</span>
-                    <span className="mt-1 sm:mt-0">
-                      {format(
-                        new Date(
-                          relatedPost.updatedAt || relatedPost.createdAt
-                        ),
-                        "MMM d, yyyy"
-                      )}
-                    </span>
+          {/* Categories and Tags */}
+          {(post.categories?.length > 0 || post.tags?.length > 0) && (
+            <>
+              <Divider className="my-6" />
+              <div className="mb-8 flex flex-col md:flex-row md:justify-between gap-2">
+                {post.categories?.length > 0 && (
+                  <div>
+                    <Title level={4} className="mb-2">
+                      Categories
+                    </Title>
+                    <div className="flex flex-wrap gap-2">
+                      {post.categories.map((category) => (
+                        <Tag key={category} color="blue">
+                          {category}
+                        </Tag>
+                      ))}
+                    </div>
                   </div>
+                )}
+                {post.tags?.length > 0 && (
+                  <div>
+                    <Title level={4} className="mb-2">
+                      Tags
+                    </Title>
+                    <div className="flex flex-wrap gap-2">
+                      {post.tags.map((tag) => (
+                        <Tag key={tag} color="purple">
+                          {tag}
+                        </Tag>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+
+          {/* Related Posts */}
+          {relatedPosts.length > 0 && (
+            <>
+              <Divider className="my-6" />
+              <div>
+                <Title level={3} className="mb-6">
+                  Related Posts
+                </Title>
+                <div className="space-y-4">
+                  {relatedPosts.map((relatedPost) => (
+                    <div
+                      key={relatedPost.id}
+                      className="pb-4 border-b border-gray-100 last:border-b-0"
+                    >
+                      <Title level={5} className="mb-1">
+                        <Link
+                          to={`/post/${relatedPost.url}`}
+                          className="text-gray-800 hover:text-blue-600 transition-colors"
+                        >
+                          {relatedPost.title}
+                        </Link>
+                      </Title>
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 text-sm text-gray-500">
+                        <Text>{relatedPost.author.userName}</Text>
+                        <Text className="hidden sm:block">•</Text>
+                        <Text>
+                          {formatIranianDate(post.updatedAt || post.createdAt)}
+                        </Text>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </Card>
-        )}
+              </div>
+            </>
+          )}
+        </Card>
       </div>
     </>
   );

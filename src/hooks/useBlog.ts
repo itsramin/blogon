@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from "react";
-import { message } from "antd";
 import { BlogInfo } from "../types";
 import { blogStorage } from "../storage/blogStorage";
 
@@ -18,7 +17,6 @@ export const useBlog = () => {
     } catch (err) {
       console.error("Failed to load blog info:", err);
       setError("Failed to load blog settings");
-      message.error("Failed to load blog settings");
       throw err;
     } finally {
       setLoading(false);
@@ -32,12 +30,10 @@ export const useBlog = () => {
       try {
         await blogStorage.updateBlogInfo(values);
         const updatedInfo = await loadBlogInfo(); // Refresh the data
-        message.success("Blog settings updated successfully");
         return updatedInfo;
       } catch (err) {
         console.error("Failed to update blog info:", err);
         setError("Failed to update blog settings");
-        message.error("Failed to update blog settings");
         throw err;
       } finally {
         setLoading(false);

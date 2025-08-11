@@ -1,4 +1,4 @@
-import { BlogInfo, BlogPost, Category, Tag } from "../types";
+import { BlogInfo, BlogPost } from "../types";
 import { loadFromGist, saveToGist } from "./gistService";
 import { importFromXML, exportToXML } from "./xmlParser";
 import { generateId, createSlug } from "./helpers";
@@ -11,8 +11,8 @@ import {
 class BlogStorage {
   private cache = {
     posts: [] as BlogPost[],
-    categories: [] as Category[],
-    tags: [] as Tag[],
+    categories: [] as string[],
+    tags: [] as string[],
     initialized: false,
     blogInfo: getDefaultBlogInfo(),
   };
@@ -26,28 +26,14 @@ class BlogStorage {
 
       this.cache.posts = data.posts;
       this.cache.categories = data.posts.flatMap((post) =>
-        post.categories
-          .map((name) => ({
-            id: generateId(),
-            name,
-            slug: createSlug(name),
-          }))
-          .filter(
-            (cat, index, self) =>
-              self.findIndex((c) => c.name === cat.name) === index
-          )
+        post.categories.filter(
+          (cat, index, self) => self.findIndex((c) => c === cat) === index
+        )
       );
       this.cache.tags = data.posts.flatMap((post) =>
-        post.tags
-          .map((name) => ({
-            id: generateId(),
-            name,
-            slug: createSlug(name),
-          }))
-          .filter(
-            (tag, index, self) =>
-              self.findIndex((t) => t.name === tag.name) === index
-          )
+        post.tags.filter(
+          (tag, index, self) => self.findIndex((t) => t === tag) === index
+        )
       );
 
       this.cache.initialized = true;
@@ -122,7 +108,7 @@ class BlogStorage {
       );
   }
 
-  async getAllCategories(): Promise<Category[]> {
+  async getAllCategories(): Promise<string[]> {
     await this.initialize();
     if (this.cache.categories.length === 0) {
       return getDefaultCategories();
@@ -130,7 +116,7 @@ class BlogStorage {
     return [...this.cache.categories];
   }
 
-  async getAllTags(): Promise<Tag[]> {
+  async getAllTags(): Promise<string[]> {
     await this.initialize();
     if (this.cache.tags.length === 0) {
       return getDefaultTags();
@@ -165,22 +151,14 @@ class BlogStorage {
 
       newPosts.forEach((post) => {
         post.categories.forEach((category) => {
-          if (!this.cache.categories.some((c) => c.name === category)) {
-            this.cache.categories.push({
-              id: generateId(),
-              name: category,
-              slug: createSlug(category),
-            });
+          if (!this.cache.categories.some((c) => c === category)) {
+            this.cache.categories.push(category);
           }
         });
 
         post.tags.forEach((tag) => {
-          if (!this.cache.tags.some((t) => t.name === tag)) {
-            this.cache.tags.push({
-              id: generateId(),
-              name: tag,
-              slug: createSlug(tag),
-            });
+          if (!this.cache.tags.some((t) => t === tag)) {
+            this.cache.tags.push(tag);
           }
         });
       });
@@ -231,6 +209,99 @@ class BlogStorage {
       console.error("Failed to save updated blog info:", error);
       throw error;
     }
+  }
+
+  async addTag(name: string): Promise<void> {
+    await this.initialize();
+    const normalizedTag = name.toLowerCase().replace(/\s+/g, "-");
+
+    if (!this.cache.tags.includes(normalizedTag)) {
+      this.cache.tags.push(normalizedTag);
+      await this.saveData();
+    }
+  }
+
+  async updateTag(oldName: string, newName: string): Promise<void> {
+    await this.initialize();
+    const normalizedNewTag = newName.toLowerCase().replace(/\s+/g, "-");
+
+    // Update tags list
+    this.cache.tags = this.cache.tags.map((tag) =>
+      tag === oldName ? normalizedNewTag : tag
+    );
+
+    // Update posts that use this tag
+    this.cache.posts = this.cache.posts.map((post) => ({
+      ...post,
+      tags: post.tags.map((tag) => (tag === oldName ? normalizedNewTag : tag)),
+    }));
+
+    await this.saveData();
+  }
+
+  async deleteTag(name: string): Promise<void> {
+    await this.initialize();
+
+    // Remove from tags list
+    this.cache.tags = this.cache.tags.filter((tag) => tag !== name);
+
+    // Remove from all posts
+    this.cache.posts = this.cache.posts.map((post) => ({
+      ...post,
+      tags: post.tags.filter((tag) => tag !== name),
+    }));
+
+    await this.saveData();
+  }
+
+  async addCategory(name: string): Promise<void> {
+    await this.initialize();
+    const normalizedCategory = name.toLowerCase().replace(/\s+/g, "-");
+
+    if (!this.cache.categories.includes(normalizedCategory)) {
+      this.cache.categories.push(normalizedCategory);
+      await this.saveData();
+    }
+  }
+
+  async updateCategory(oldName: string, newName: string): Promise<void> {
+    await this.initialize();
+    const normalizedNewCategory = newName.toLowerCase().replace(/\s+/g, "-");
+
+    // Update categories list
+    this.cache.categories = this.cache.categories.map((cat) =>
+      cat === oldName ? normalizedNewCategory : cat
+    );
+
+    // Update posts that use this category
+    this.cache.posts = this.cache.posts.map((post) => ({
+      ...post,
+      categories: post.categories.map((cat) =>
+        cat === oldName ? normalizedNewCategory : cat
+      ),
+    }));
+
+    await this.saveData();
+  }
+
+  async deleteCategory(name: string): Promise<void> {
+    await this.initialize();
+
+    // Remove from categories list
+    this.cache.categories = this.cache.categories.filter((cat) => cat !== name);
+
+    // Remove from all posts
+    this.cache.posts = this.cache.posts.map((post) => ({
+      ...post,
+      categories: post.categories.filter((cat) => cat !== name),
+    }));
+
+    await this.saveData();
+  }
+
+  private async saveData(): Promise<void> {
+    const xml = await this.exportData();
+    await saveToGist(xml);
   }
 
   private async exportData(): Promise<string> {

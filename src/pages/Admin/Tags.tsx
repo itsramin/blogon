@@ -1,66 +1,110 @@
 import React, { useState } from "react";
 import { Table, Button, Input, Modal, Form, Space } from "antd";
-import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
+import {
+  DeleteOutlined,
+  EditOutlined,
+  PlusOutlined,
+  CheckOutlined,
+  CloseOutlined,
+} from "@ant-design/icons";
 import useTaxonomy from "../../hooks/useTaxonomy";
 
+interface TagItem {
+  key: string;
+  name: string;
+}
+
 const TagsPage: React.FC = () => {
-  const {
-    categories: tags,
-    loading,
-    addCategory: addTag,
-    updateCategory: updateTag,
-    deleteCategory: deleteTag,
-    refreshCategories: refreshTags,
-  } = useTaxonomy();
+  const { tags, loading, addTag, updateTag, deleteTag, refreshTags } =
+    useTaxonomy();
   const [form] = Form.useForm();
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [editingTag, setEditingTag] = useState<string | null>(null);
+  const [isAddModalVisible, setIsAddModalVisible] = useState(false);
+  const [editingKey, setEditingKey] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState("");
+
+  // Convert tags string array to TagItem array
+  const tagItems: TagItem[] = tags.map((tag) => ({ key: tag, name: tag }));
 
   const columns = [
     {
       title: "Name",
       dataIndex: "name",
       key: "name",
-    },
-    {
-      title: "Slug",
-      dataIndex: "slug",
-      key: "slug",
+      render: (text: string, record: TagItem) => {
+        if (editingKey === record.key) {
+          return (
+            <Input
+              value={editValue}
+              onChange={(e) => setEditValue(e.target.value)}
+              autoFocus
+            />
+          );
+        }
+        return text;
+      },
     },
     {
       title: "Actions",
       key: "actions",
-      render: (_: any, record: any) => (
-        <Space size="middle">
-          <Button
-            icon={<EditOutlined />}
-            onClick={() => handleEdit(record)}
-            size="small"
-          />
-          <Button
-            icon={<DeleteOutlined />}
-            onClick={() => handleDelete(record.id)}
-            danger
-            size="small"
-          />
-        </Space>
-      ),
+      render: (_: any, record: TagItem) => {
+        if (editingKey === record.key) {
+          return (
+            <Space size="middle">
+              <Button
+                icon={<CheckOutlined />}
+                onClick={() => handleSave(record)}
+                type="primary"
+                size="small"
+              />
+              <Button
+                icon={<CloseOutlined />}
+                onClick={() => setEditingKey(null)}
+                size="small"
+              />
+            </Space>
+          );
+        }
+        return (
+          <Space size="middle">
+            <Button
+              icon={<EditOutlined />}
+              onClick={() => handleEdit(record)}
+              size="small"
+            />
+            <Button
+              icon={<DeleteOutlined />}
+              onClick={() => handleDelete(record)}
+              danger
+              size="small"
+            />
+          </Space>
+        );
+      },
     },
   ];
 
   const handleAdd = () => {
-    form.resetFields();
-    setEditingTag(null);
-    setIsModalVisible(true);
+    setIsAddModalVisible(true);
   };
 
-  const handleEdit = (tag: any) => {
-    form.setFieldsValue({ name: tag.name });
-    setEditingTag(tag.id);
-    setIsModalVisible(true);
+  const handleEdit = (record: TagItem) => {
+    setEditingKey(record.key);
+    setEditValue(record.name);
   };
 
-  const handleDelete = async (id: string) => {
+  const handleSave = async (record: TagItem) => {
+    if (!editValue.trim()) return;
+
+    try {
+      await updateTag(record.name, editValue);
+      setEditingKey(null);
+      refreshTags();
+    } catch (error) {
+      console.error("Failed to update tag:", error);
+    }
+  };
+
+  const handleDelete = async (record: TagItem) => {
     Modal.confirm({
       title: "Delete Tag",
       content: "Are you sure you want to delete this tag?",
@@ -68,21 +112,18 @@ const TagsPage: React.FC = () => {
       okType: "danger",
       cancelText: "Cancel",
       onOk: async () => {
-        await deleteTag(id);
+        await deleteTag(record.name);
         refreshTags();
       },
     });
   };
 
-  const handleSubmit = async () => {
+  const handleAddSubmit = async () => {
     try {
       const values = await form.validateFields();
-      if (editingTag) {
-        await updateTag(editingTag, values.name);
-      } else {
-        await addTag(values.name);
-      }
-      setIsModalVisible(false);
+      await addTag(values.name);
+      setIsAddModalVisible(false);
+      form.resetFields();
       refreshTags();
     } catch (error) {
       console.error("Validation failed:", error);
@@ -98,19 +139,19 @@ const TagsPage: React.FC = () => {
         </Button>
       </div>
 
-      <Table
+      <Table<TagItem>
         columns={columns}
-        dataSource={tags}
-        rowKey="id"
+        dataSource={tagItems}
+        rowKey="key"
         loading={loading}
         pagination={false}
       />
 
       <Modal
-        title={editingTag ? "Edit Tag" : "Add Tag"}
-        open={isModalVisible}
-        onOk={handleSubmit}
-        onCancel={() => setIsModalVisible(false)}
+        title="Add Tag"
+        open={isAddModalVisible}
+        onOk={handleAddSubmit}
+        onCancel={() => setIsAddModalVisible(false)}
       >
         <Form form={form} layout="vertical">
           <Form.Item
