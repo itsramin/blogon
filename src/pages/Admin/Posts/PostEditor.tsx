@@ -14,7 +14,6 @@ import {
 import { useNavigate, useParams } from "react-router-dom";
 import { useBlog } from "../../../hooks/useBlog";
 import { BlogPost } from "../../../types";
-import { RichTextEditor } from "../../../components/Editor/RichTextEditor";
 import {
   ArrowLeftOutlined,
   EyeOutlined,
@@ -22,6 +21,7 @@ import {
 } from "@ant-design/icons";
 import usePosts from "../../../hooks/usePosts";
 import useTaxonomy from "../../../hooks/useTaxonomy";
+import RichTextEditor from "../../../components/Editor/RichTextEditor";
 
 const { Title } = Typography;
 
