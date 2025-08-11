@@ -33,8 +33,9 @@ export const useFeed = () => {
   }, []);
 
   const addRssFeed = useCallback(
-    async (url: string) => {
+    async (newRss: string) => {
       if (!blogInfo) return;
+      const url = `https://${newRss}.vercel.app/rss.xml`;
 
       // Check if URL already exists
       if (blogInfo.rssFeeds?.includes(url)) {

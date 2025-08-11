@@ -3,14 +3,14 @@ import { Button, Input, List, Spin, Alert, Popconfirm, message } from "antd";
 import { useFeed } from "../../hooks/useFeed";
 
 const Followings = () => {
-  const [newFeedUrl, setNewFeedUrl] = useState("");
+  const [newRss, setNewRss] = useState("");
   const { rssFeeds, loading, error, addRssFeed, removeRssFeed } = useFeed();
 
   const handleAddFeed = async () => {
-    if (!newFeedUrl) return;
+    if (!newRss) return;
     try {
-      await addRssFeed(newFeedUrl);
-      setNewFeedUrl("");
+      await addRssFeed(newRss);
+      setNewRss("");
       message.success("RSS feed added successfully");
     } catch (err: any) {
       message.error(err.message);
@@ -30,17 +30,19 @@ const Followings = () => {
     <div className="max-w-4xl mx-auto p-4">
       <div className="mb-6 flex gap-2">
         <Input
-          value={newFeedUrl}
-          onChange={(e) => setNewFeedUrl(e.target.value)}
-          placeholder="Enter RSS URL (e.g., https://other-blog.com/rss.xml)"
+          value={newRss}
+          onChange={(e) => setNewRss(e.target.value)}
+          placeholder="Enter blogs name"
           size="large"
+          prefix="https://"
+          suffix=".vercel.app"
         />
         <Button
           type="primary"
           onClick={handleAddFeed}
           size="large"
           loading={loading}
-          disabled={!newFeedUrl}
+          disabled={!newRss}
         >
           Add Feed
         </Button>
@@ -75,7 +77,7 @@ const Followings = () => {
                   </Popconfirm>,
                 ]}
               >
-                {url}
+                {url.split(".")[0].split("https://")}
               </List.Item>
             )}
           />
