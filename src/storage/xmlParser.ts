@@ -45,6 +45,9 @@ export const importFromXML = async (xmlString: string): Promise<BlogData> => {
         lastName:
           userNode.querySelector("LAST_NAME")?.textContent?.trim() || "",
       })),
+      rssFeeds: Array.from(
+        blogInfoNode?.querySelectorAll("RSS_FEEDS FEED") || []
+      ).map((feedNode) => feedNode.textContent?.trim() || ""),
     };
 
     const postNodes = xmlDoc.querySelectorAll("POSTS POST");
@@ -132,6 +135,18 @@ export const exportToXML = (blogInfo: BlogInfo, posts: BlogPost[]): string => {
     });
     xml += `
     </AUTHORS>`;
+  }
+
+  // New: Serialize RSS feeds
+  if (blogInfo.rssFeeds && blogInfo.rssFeeds.length > 0) {
+    xml += `
+    <RSS_FEEDS>`;
+    blogInfo.rssFeeds.forEach((feed) => {
+      xml += `
+      <FEED>${escapeXml(feed)}</FEED>`;
+    });
+    xml += `
+    </RSS_FEEDS>`;
   }
 
   xml += `
