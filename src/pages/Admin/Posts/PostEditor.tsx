@@ -138,10 +138,73 @@ const PostEditor: React.FC = () => {
     }
   };
 
-  // Helper functions to be moved to usePosts hook
   const generateId = (): string => {
     return Date.now().toString(36) + Math.random().toString(36).substr(2);
   };
+
+  const formContent = (
+    <>
+      <Form.Item
+        name="title"
+        label="Title"
+        rules={[{ required: true, message: "Please enter a title" }]}
+      >
+        <Input
+          size="large"
+          placeholder="Enter post title"
+          onBlur={(e) => generateUrlFromTitle(e.target.value)}
+        />
+      </Form.Item>
+
+      <Form.Item
+        name="url"
+        label="URL"
+        rules={[{ required: true, message: "Please enter a URL" }]}
+      >
+        <Input size="large" placeholder="post-url" />
+      </Form.Item>
+
+      <Form.Item label="Content" required className="h-full">
+        <RichTextEditor
+          value={content}
+          onChange={setContent}
+          placeholder="Start writing your post content..."
+        />
+      </Form.Item>
+    </>
+  );
+
+  const optionContent = (
+    <>
+      <Form.Item name="status" label="Status">
+        <Select>
+          <Select.Option value="draft">Draft</Select.Option>
+          <Select.Option value="published">Published</Select.Option>
+        </Select>
+      </Form.Item>
+
+      <Form.Item name="categories" label="Categories">
+        <Select
+          mode="multiple"
+          placeholder="Select categories"
+          loading={loading}
+          options={categories.map((cat) => ({
+            value: cat.name,
+            label: cat.name,
+          }))}
+        />
+      </Form.Item>
+
+      <Form.Item name="tags" label="Tags">
+        <Select
+          mode="tags"
+          placeholder="Enter or select tags"
+          loading={loading}
+          tokenSeparators={[","]}
+        />
+      </Form.Item>
+    </>
+  );
 
   return (
     <div className="space-y-6">
@@ -153,7 +216,7 @@ const PostEditor: React.FC = () => {
           >
             Back
           </Button>
-          <Title level={2} className="mb-0 text-center sm:text-left">
+          <Title level={2} className="!mb-0 text-center sm:text-left">
             {isEditing ? "Edit Post" : "New Post"}
           </Title>
         </div>
@@ -191,66 +254,29 @@ const PostEditor: React.FC = () => {
       >
         <Row gutter={24}>
           <Col xs={24} lg={16}>
-            <Card title="Content" className="shadow-sm mb-6">
-              <Form.Item
-                name="title"
-                label="Title"
-                rules={[{ required: true, message: "Please enter a title" }]}
-              >
-                <Input
-                  size="large"
-                  placeholder="Enter post title"
-                  onBlur={(e) => generateUrlFromTitle(e.target.value)}
-                />
-              </Form.Item>
+            {/* Mobile view - simple div */}
+            <div className="md:hidden space-y-4 mb-6">
+              <Title level={4}>Post</Title>
+              {formContent}
+            </div>
 
-              <Form.Item
-                name="url"
-                label="URL"
-                rules={[{ required: true, message: "Please enter a URL" }]}
-              >
-                <Input size="large" placeholder="post-url" />
-              </Form.Item>
+            {/* Desktop view - Card */}
 
-              <Form.Item label="Content" required className="h-full">
-                <RichTextEditor
-                  value={content}
-                  onChange={setContent}
-                  placeholder="Start writing your post content..."
-                />
-              </Form.Item>
+            <Card title="Post" className="shadow-sm mb-6 hidden md:block">
+              {formContent}
             </Card>
           </Col>
 
           <Col xs={24} lg={8}>
-            <Card title="Post Settings" className="shadow-sm mb-6">
-              <Form.Item name="status" label="Status">
-                <Select>
-                  <Select.Option value="draft">Draft</Select.Option>
-                  <Select.Option value="published">Published</Select.Option>
-                </Select>
-              </Form.Item>
+            {/* Mobile view - simple div */}
+            <div className="md:hidden space-y-4 mb-6">
+              <Title level={4}>Settings</Title>
+              {optionContent}
+            </div>
 
-              <Form.Item name="categories" label="Categories">
-                <Select
-                  mode="multiple"
-                  placeholder="Select categories"
-                  loading={loading}
-                  options={categories.map((cat) => ({
-                    value: cat.name,
-                    label: cat.name,
-                  }))}
-                />
-              </Form.Item>
-
-              <Form.Item name="tags" label="Tags">
-                <Select
-                  mode="tags"
-                  placeholder="Enter or select tags"
-                  loading={loading}
-                  tokenSeparators={[","]}
-                />
-              </Form.Item>
+            {/* Desktop view - Card */}
+            <Card title="Settings" className="shadow-sm mb-6 hidden md:block">
+              {optionContent}
             </Card>
           </Col>
         </Row>

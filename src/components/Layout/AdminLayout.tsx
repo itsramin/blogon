@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Layout, Menu, Drawer, Button } from "antd";
-import { Link, useLocation, Navigate } from "react-router-dom";
+import { Link, useLocation, Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { Header as AdminHeader } from "./Header";
 import {
@@ -11,6 +11,8 @@ import {
   TagOutlined,
   LinkOutlined,
   MenuOutlined,
+  EyeOutlined,
+  LogoutOutlined,
 } from "@ant-design/icons";
 
 const { Content } = Layout;
@@ -21,7 +23,8 @@ interface AdminLayoutProps {
 
 export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const location = useLocation();
-  const { isAuthenticated, loading } = useAuth();
+  const navigate = useNavigate();
+  const { isAuthenticated, loading, logout } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
 
@@ -32,6 +35,10 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       </div>
     );
   }
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
 
   if (!isAuthenticated) {
     return <Navigate to="/admin/login" replace />;
@@ -84,6 +91,23 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       icon: <SettingOutlined />,
       label: <Link to="/admin/settings">Settings</Link>,
     },
+    {
+      key: "/",
+      icon: <EyeOutlined />,
+      label: <Link to="/">Visit blog</Link>,
+    },
+    {
+      type: "divider" as const,
+    },
+    {
+      key: "/logout",
+      icon: <LogoutOutlined />,
+      label: (
+        <Button type="text" onClick={handleLogout}>
+          Logout
+        </Button>
+      ),
+    },
   ];
 
   const toggleDrawer = () => {
@@ -93,9 +117,9 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   return (
     <Layout className="min-h-screen relative">
       <AdminHeader />
-      <div className="md:hidden absolute top-20 left-4 z-10">
+      <div className="md:hidden absolute top-4 right-4 z-10">
         <Button
-          type="primary"
+          type="default"
           icon={<MenuOutlined />}
           onClick={toggleDrawer}
           className="flex items-center justify-center"
@@ -123,7 +147,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         {/* Mobile Drawer */}
         <Drawer
           title="Menu"
-          placement="left"
+          placement="right"
           onClose={toggleDrawer}
           open={drawerVisible}
           width={250}
