@@ -6,7 +6,6 @@ import {
   EditOutlined,
   EyeOutlined,
   FileTextOutlined,
-  LineChartOutlined,
 } from "@ant-design/icons";
 import { format } from "date-fns";
 import StatCard from "../../components/StatCard";
@@ -20,7 +19,6 @@ export const Dashboard: React.FC = () => {
     totalPosts: 0,
     publishedPosts: 0,
     draftPosts: 0,
-    totalViews: 0,
   });
   useEffect(() => {
     const publishedPosts = posts.filter((post) => post.status === "published");
@@ -30,7 +28,6 @@ export const Dashboard: React.FC = () => {
       totalPosts: posts.length,
       publishedPosts: publishedPosts.length,
       draftPosts: draftPosts.length,
-      totalViews: Math.floor(Math.random() * 10000) + 1000,
     });
   }, [posts]);
 
@@ -79,14 +76,6 @@ export const Dashboard: React.FC = () => {
             value={stats.draftPosts}
             icon={<EditOutlined size={20} />}
             color="orange"
-          />
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <StatCard
-            title="Total Views"
-            value={stats.totalViews}
-            icon={<LineChartOutlined size={20} />}
-            color="purple"
           />
         </Col>
       </Row>
@@ -153,7 +142,7 @@ export const Dashboard: React.FC = () => {
 
         <Col xs={24} lg={8}>
           <Card title="Quick Actions" className="shadow-sm">
-            <div className="space-y-3">
+            <div className="space-y-3 flex flex-col">
               <Link to="/admin/posts/new">
                 <Button type="primary" block size="large">
                   <FileTextOutlined size={16} className="mr-2" />
