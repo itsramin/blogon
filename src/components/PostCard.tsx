@@ -24,7 +24,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
     >
       <div className="flex-1">
         <div className="flex items-center justify-between">
-          <Title level={4} className="mb-2 line-clamp-2">
+          <Title level={4} className="mb-2">
             <Link to={`/post/${post.url}`}>{post.title}</Link>
           </Title>
           {isAuthenticated && (
@@ -35,7 +35,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
         </div>
 
         <div
-          className=" max-w-none break-words line-clamp-3"
+          className=" max-w-none break-words "
           dangerouslySetInnerHTML={{ __html: post.content }}
           style={{
             lineHeight: "1.7",

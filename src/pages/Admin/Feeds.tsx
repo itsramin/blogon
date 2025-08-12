@@ -46,7 +46,7 @@ const Feeds: React.FC = () => {
                     </>
                   }
                 />
-                <p className="mt-2 line-clamp-3">{post.content}</p>
+                <p className="mt-2 ">{post.content}</p>
                 <div className="mt-2">
                   {post.categories.map((cat) => (
                     <span
