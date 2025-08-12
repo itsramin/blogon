@@ -8,7 +8,6 @@ This is a comprehensive guide to setting up and deploying the weblog platform.
 
 ### **پیش‌نیازها**
 
-- Node.js نسخه ۱۸ یا بالاتر
 - اکانت GitHub
 - اکانت Vercel
 
@@ -94,7 +93,6 @@ _ برای ورود به پنل مدیریت، به آدرس `your-project-name.
 
 ### **Prerequisites**
 
-- Node.js 18 or higher
 - A GitHub account
 - A Vercel account
 
