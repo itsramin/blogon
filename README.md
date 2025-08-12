@@ -1,263 +1,182 @@
-# Weblog Platform
+# Blogon Setup Guide
 
-A comprehensive React-based weblog platform with an integrated admin dashboard. Built with React 18, TypeScript, Ant Design, and Tailwind CSS.
-
-## Features
-
-### Admin Dashboard
-- 🔐 Secure authentication system
-- ✏️ Rich text editor for post creation
-- 📝 CRUD operations for blog posts
-- 🏷️ Category and tag management
-- 📊 Dashboard with statistics
-- 👀 Post preview functionality
-- 🎯 Draft/published status management
-
-### Public Blog Interface
-- 📱 Responsive design for all devices
-- 🔍 Search functionality across posts
-- 🏷️ Category and tag filtering
-- 📖 Clean reading experience
-- 🌐 SEO optimization
-- 📄 Individual post pages
-
-### Technical Features
-- ⚡ XML-based data storage
-- 🎨 Ant Design component library
-- 💎 Tailwind CSS for styling
-- 🚀 Vercel deployment ready
-- 📱 Mobile-first responsive design
-- ♿ Accessible design (WCAG compliant)
-
-## Quick Start
-
-### Prerequisites
-- Node.js 18 or higher
-- npm or yarn package manager
-
-### Installation
-
-1. **Clone and setup the project:**
-   ```bash
-   git clone <your-repo-url>
-   cd weblog-platform
-   npm install
-   ```
-
-2. **Configure environment variables:**
-   ```bash
-   cp .env.example .env
-   ```
-   Edit `.env` with your configuration.
-
-3. **Start the development server:**
-   ```bash
-   npm run dev
-   ```
-
-4. **Access the application:**
-   - Public blog: `http://localhost:5173`
-   - Admin dashboard: `http://localhost:5173/admin/login`
-   - Admin credentials: `admin` / `admin123`
-
-## Deployment to Vercel
-
-### Automatic Deployment
-1. **Connect to Vercel:**
-   - Push your code to GitHub
-   - Connect your repository to Vercel
-   - Vercel will automatically deploy
-
-2. **Environment Variables:**
-   Configure these in your Vercel dashboard:
-   ```
-   VITE_ADMIN_USERNAME=your-admin-username
-   VITE_ADMIN_PASSWORD=your-secure-password
-   VITE_SITE_NAME=Your Blog Name
-   VITE_SITE_URL=https://your-domain.vercel.app
-   ```
-
-### Manual Deployment
-```bash
-# Build the project
-npm run build
-
-# Deploy to Vercel
-npx vercel --prod
-```
-
-## Project Structure
-
-```
-src/
-├── components/          # Reusable components
-│   ├── Editor/         # Rich text editor
-│   └── Layout/         # Layout components
-├── context/            # React contexts
-├── pages/              # Page components
-│   ├── Admin/         # Admin dashboard pages
-│   └── Public/        # Public blog pages
-├── types/              # TypeScript type definitions
-├── utils/              # Utility functions
-└── App.tsx            # Main application component
-```
-
-## Data Management
-
-The platform uses XML files for data storage, simulated through localStorage in the demo. In production, this integrates with:
-
-- **Vercel KV Database** for persistent storage
-- **Vercel File System** for XML file management
-- **Automatic deployment triggers** when content changes
-
-### Data Structure
-
-```typescript
-interface BlogPost {
-  id: string;
-  title: string;
-  content: string;
-  author: string;
-  createdAt: string;
-  updatedAt: string;
-  publishedAt?: string;
-  status: 'draft' | 'published';
-  categories: string[];
-  tags: string[];
-  slug: string;
-  excerpt?: string;
-  metaTitle?: string;
-  metaDescription?: string;
-}
-```
-
-## Admin Features
-
-### Authentication
-- Secure login system
-- Session management
-- Protected admin routes
-
-### Content Management
-- **Rich Text Editor**: Full-featured WYSIWYG editor
-- **Post Management**: Create, edit, delete posts
-- **Category System**: Organize posts by categories
-- **Tag System**: Flexible tagging system
-- **SEO Fields**: Meta title and description
-- **Preview Mode**: Preview before publishing
-
-### Dashboard
-- Post statistics
-- Recent posts overview
-- Quick actions
-- Content analytics
-
-## Public Features
-
-### Blog Interface
-- **Homepage**: Grid layout of published posts
-- **Post Detail**: Full post view with comments
-- **Search**: Full-text search across content
-- **Filtering**: Filter by categories and tags
-- **Pagination**: Navigate through multiple pages
-- **Responsive**: Mobile-first design
-
-### SEO Features
-- Dynamic meta tags
-- Open Graph tags
-- Structured data
-- Clean URLs with slugs
-- XML sitemap generation
-
-## Customization
-
-### Styling
-The platform uses a combination of:
-- **Ant Design**: Component library
-- **Tailwind CSS**: Utility-first styling
-- **Custom CSS**: Component-specific styles
-
-### Color Palette
-```css
-:root {
-  --primary: #1890FF;    /* Ant Design blue */
-  --secondary: #52C41A;  /* Success green */
-  --background: #F0F2F5; /* Light grey */
-  --text: #262626;       /* Dark grey */
-  --border: #D9D9D9;     /* Light border */
-  --accent: #722ED1;     /* Purple */
-}
-```
-
-### Typography
-- **Primary Font**: Inter
-- **Fallbacks**: SF Pro Display, system fonts
-- **Base Size**: 16px
-- **Line Height**: 1.6 (body), 1.2 (headings)
-- **Font Weights**: 400, 500, 600
-
-## Development
-
-### Available Scripts
-```bash
-npm run dev          # Start development server
-npm run build        # Build for production
-npm run preview      # Preview production build
-npm run lint         # Run ESLint
-npm run type-check   # Run TypeScript checks
-```
-
-### Code Quality
-- **TypeScript**: Full type safety
-- **ESLint**: Code linting
-- **Prettier**: Code formatting
-- **Git Hooks**: Pre-commit checks
-
-## Production Considerations
-
-### Performance
-- Code splitting and lazy loading
-- Image optimization
-- Caching strategies
-- Minimal bundle size
-
-### Security
-- Input sanitization
-- XSS protection
-- CSRF protection
-- Secure authentication
-
-### SEO
-- Server-side rendering considerations
-- Meta tag management
-- Structured data
-- XML sitemaps
-
-## Browser Support
-
-- **Modern browsers**: Chrome, Firefox, Safari, Edge (latest 2 versions)
-- **Mobile browsers**: iOS Safari, Chrome Mobile
-- **JavaScript required**: Progressive enhancement approach
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
-
-## License
-
-This project is licensed under the MIT License. See LICENSE file for details.
-
-## Support
-
-For questions and support:
-- Create an issue on GitHub
-- Check the documentation
-- Review existing issues and discussions
+This is a comprehensive guide to setting up and deploying the weblog platform.
 
 ---
 
-**Built with ❤️ using React, TypeScript, Ant Design, and Tailwind CSS**
+## **فارسی (Persian)**
+
+### **پیش‌نیازها**
+
+- Node.js نسخه ۱۸ یا بالاتر
+- اکانت GitHub
+- اکانت Vercel
+
+### **راه‌اندازی و استقرار**
+
+روش اصلی برای استفاده از این پلتفرم، استقرار آن بر روی Vercel است. مراحل زیر شما را در این فرآیند راهنمایی می‌کند.
+
+#### **بخش اول: تنظیمات گیت‌هاب**
+
+۱. **فورک کردن ریپازیتوری**
+_ به ریپازیتوری پروژه بروید: [https://github.com/itsramin/blogon](https://github.com/itsramin/blogon)
+_ در گوشه بالا سمت راست، روی دکمه **Fork** کلیک کنید تا یک کپی از ریپازیتوری در اکانت گیت‌هاب شما ایجاد شود.
+
+۲. **فعال‌سازی GitHub Actions**
+_ در ریپازیتوری فورک شده خود، به تب **Actions** بروید.
+_ روی دکمه **I understand my workflows, go ahead and enable them** کلیک کنید.
+
+۳. **ایجاد یک Gist در گیت‌هاب برای ذخیره‌سازی داده‌ها**
+_ به آدرس [https://gist.github.com/](https://gist.github.com/) بروید.
+_ در قسمت **Filename including extension...**، عبارت **`posts.xml`** را وارد کنید. این نام باید دقیقاً همین باشد. \* در بخش محتوای فایل، ساختار XML زیر را جای‌گذاری کنید:
+
+        ```xml
+        <?xml version="1.0" encoding="UTF-8"?>
+        <BLOG_DATA>
+          <BLOG_INFO>
+            <DOMAIN>myblog.com</DOMAIN>
+            <TITLE>My Blog</TITLE>
+            <SHORT_DESCRIPTION>A blog about interesting things</SHORT_DESCRIPTION>
+            <FULL_DESCRIPTION>Detailed description of my blog's content and purpose</FULL_DESCRIPTION>
+            <OWNER>
+              <USER>
+                <USER_NAME>user</USER_NAME>
+                <FIRST_NAME>first name</FIRST_NAME>
+                <LAST_NAME>last name</LAST_NAME>
+              </USER>
+            </OWNER>
+          </BLOG_INFO>
+          <POSTS>
+          </POSTS>
+        </BLOG_DATA>
+        ```
+
+- روی دکمه **Create secret gist** کلیک کنید.
+- پس از ایجاد gist، **شناسه (ID) آن را از URL کپی کنید**. این شناسه، رشته طولانی از حروف و اعداد است که بعد از نام کاربری شما قرار دارد. برای مثال، در آدرس `https://gist.github.com/your-username/123abc123abc`، شناسه `123abc123abc` است. این شناسه را برای استفاده در مراحل بعدی ذخیره کنید.
+
+۴. **ایجاد یک توکن دسترسی شخصی در گیت‌هاب (Personal Access Token)**
+_ به بخش **Settings** -> **Developer settings** در اکانت گیت‌هاب خود بروید.
+_ روی **Personal access tokens** و سپس **Tokens (classic)** کلیک کنید.
+_ روی **Generate new token** و سپس **Generate new token (classic)** کلیک کنید.
+_ یک **Note** (یادداشت) برای توکن خود بنویسید (مثلاً "Blogon").
+_ قسمت **Expiration** (تاریخ انقضا) را روی **No expiration** (بدون انقضا) تنظیم کنید.
+_ در بخش **Select scopes**، تیک گزینه **gist** را بزنید.
+_ روی **Generate token** کلیک کنید.
+_ **توکن ایجاد شده را فوراً کپی کرده** و در جایی امن ذخیره کنید.
+
+---
+
+#### **بخش دوم: استقرار در Vercel**
+
+۱. **ایجاد یک پروژه جدید** \* وارد حساب کاربری خود در Vercel شوید و روی **Add New...** -> **Project** کلیک کنید.
+
+۲. **وارد کردن ریپازیتوری فورک شده**
+_ اکانت گیت‌هاب خود را به Vercel متصل کنید.
+_ ریپازیتوری فورک شده `blogon` خود را در لیست پیدا کرده و روی **Import** کلیک کنید.
+
+۳. **پیکربندی پروژه**
+_ Vercel باید به طور خودکار تشخیص دهد که این یک پروژه Vite است.
+_ بخش **Environment Variables** (متغیرهای محیطی) را باز کنید. شما باید چهار متغیر زیر را اضافه کنید:
+_ `VITE_GIST_ID`: **شناسه Gist** که قبلاً کپی کرده بودید را اینجا جای‌گذاری کنید.
+_ `VITE_GITHUB_TOKEN`: **توکن دسترسی شخصی گیت‌هاب** که ایجاد کرده بودید را اینجا جای‌گذاری کنید.
+_ `VITE_ADMIN_USERNAME`: یک نام کاربری برای ورود به پنل مدیریت وبلاگ خود انتخاب کنید.
+_ `VITE_ADMIN_PASSWORD`: یک رمز عبور برای ورود به پنل مدیریت وبلاگ خود انتخاب کنید. \* روی دکمه **Deploy** کلیک کنید.
+
+۴. **دسترسی به وبلاگ شما**
+_ پس از اتمام فرآیند استقرار، Vercel یک URL به شما می‌دهد. با مراجعه به این آدرس می‌توانید وبلاگ جدید خود را ببینید.
+_ برای ورود به پنل مدیریت، به آدرس `your-project-name.vercel.app/admin/login` بروید و از نام کاربری و رمز عبوری که در متغیرهای محیطی تنظیم کرده‌اید، استفاده کنید.
+
+---
+
+---
+
+## **English**
+
+### **Prerequisites**
+
+- Node.js 18 or higher
+- A GitHub account
+- A Vercel account
+
+### **Setup and Deployment**
+
+The primary method for using this platform is by deploying it to Vercel. The following steps will guide you through the process.
+
+#### **Part 1: GitHub Setup**
+
+1.  **Fork the Repository**
+
+    - Navigate to the repository: [https://github.com/itsramin/blogon](https://github.com/itsramin/blogon)
+    - Click the "**Fork**" button in the top-right corner to create a copy of the repository in your own GitHub account.
+
+2.  **Enable GitHub Actions**
+
+    - In your forked repository, go to the "**Actions**" tab.
+    - Click the "**I understand my workflows, go ahead and enable them**" button. This will enable a workflow that keeps your fork synced with the original repository.
+
+3.  **Create a GitHub Gist for Data Storage**
+
+    - Go to [https://gist.github.com/](https://gist.github.com/).
+    - For "**Filename including extension...**", enter **`posts.xml`**. The name must be exact.
+    - In the file content area, paste the following XML structure:
+
+      ```xml
+      <?xml version="1.0" encoding="UTF-8"?>
+      <BLOG_DATA>
+        <BLOG_INFO>
+          <DOMAIN>myblog.com</DOMAIN>
+          <TITLE>My Blog</TITLE>
+          <SHORT_DESCRIPTION>A blog about interesting things</SHORT_DESCRIPTION>
+          <FULL_DESCRIPTION>Detailed description of my blog's content and purpose</FULL_DESCRIPTION>
+          <OWNER>
+            <USER>
+              <USER_NAME>user</USER_NAME>
+              <FIRST_NAME>first name</FIRST_NAME>
+              <LAST_NAME>last name</LAST_NAME>
+            </USER>
+          </OWNER>
+        </BLOG_INFO>
+        <POSTS>
+        </POSTS>
+      </BLOG_DATA>
+      ```
+
+    - Click the "**Create secret gist**" button.
+    - After the gist is created, **copy the ID from the URL**. The ID is the long string of characters after your username. For example, in `https://gist.github.com/your-username/123abc123abc`, the ID is `123abc123abc`. Save this ID for later.
+
+4.  **Generate a GitHub Personal Access Token**
+    - Go to your GitHub "**Settings**" -> "**Developer settings**".
+    - Click on "**Personal access tokens**", then "**Tokens (classic)**".
+    - Click "**Generate new token**" and select "**Generate new token (classic)**".
+    - Give your token a **Note** (e.g., "Blogon").
+    - Set the **Expiration** to "**No expiration**".
+    - Under "**Select scopes**", check the box for "**gist**".
+    - Click "**Generate token**".
+    - **Copy the generated token immediately** and save it somewhere safe. You will not be able to see it again.
+
+---
+
+#### **Part 2: Vercel Deployment**
+
+1.  **Create a New Project**
+
+    - Log in to your Vercel account and click "**Add New...**" -> "**Project**".
+
+2.  **Import Your Forked Repository**
+
+    - Connect your GitHub account to Vercel.
+    - Find your forked `blogon` repository in the list and click "**Import**".
+
+3.  **Configure the Project**
+
+    - Vercel should automatically detect that this is a Vite project.
+    - Expand the "**Environment Variables**" section. You will need to add the following four variables:
+      - `VITE_GIST_ID`: Paste the **Gist ID** you copied earlier.
+      - `VITE_GITHUB_TOKEN`: Paste the **GitHub Personal Access Token** you generated.
+      - `VITE_ADMIN_USERNAME`: Choose a username for your blog's admin login.
+      - `VITE_ADMIN_PASSWORD`: Choose a password for your blog's admin login.
+    - Click the "**Deploy**" button.
+
+4.  **Access Your Blog**
+    - After the deployment is complete, Vercel will provide you with a URL. You can visit this URL to see your new blog.
+    - To log in to the admin panel, go to `your-project-name.vercel.app/admin/login` and use the admin username and password you set in the environment variables.
