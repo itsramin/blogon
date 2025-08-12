@@ -20,7 +20,6 @@ import {
   EditOutlined,
   EyeOutlined,
   PlusOutlined,
-  SearchOutlined,
   UploadOutlined,
 } from "@ant-design/icons";
 import { format } from "date-fns";
@@ -195,7 +194,6 @@ const PostList: React.FC = () => {
       <div className="flex flex-col sm:flex-row gap-4 mb-6 px-2">
         <SearchInput
           placeholder="Search posts..."
-          prefix={<SearchOutlined size={16} />}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="flex-1"

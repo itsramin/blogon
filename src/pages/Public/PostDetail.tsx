@@ -102,7 +102,7 @@ const PostDetail: React.FC = () => {
 
           {/* Post Content */}
           <div
-            className="prose prose-lg max-w-none mb-8"
+            className="max-w-none mb-8"
             dangerouslySetInnerHTML={{ __html: post.content }}
             style={{
               lineHeight: "1.7",

@@ -35,7 +35,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
         </div>
 
         <div
-          className="prose prose-sm max-w-none break-words line-clamp-3"
+          className=" max-w-none break-words line-clamp-3"
           dangerouslySetInnerHTML={{ __html: post.content }}
           style={{
             lineHeight: "1.7",

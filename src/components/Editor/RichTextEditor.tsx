@@ -4,11 +4,18 @@ import {
   BoldOutlined,
   ItalicOutlined,
   UnderlineOutlined,
-  AlignLeftOutlined,
-  AlignCenterOutlined,
-  AlignRightOutlined,
-  BorderOuterOutlined,
 } from "@ant-design/icons";
+
+import {
+  TbAlignCenter,
+  TbAlignLeft,
+  TbAlignRight,
+  TbAlignJustified,
+  TbTextDirectionLtr,
+  TbTextDirectionRtl,
+} from "react-icons/tb";
+
+type alignment = "left" | "center" | "right" | "justify";
 
 type Props = {
   value?: string;
@@ -22,10 +29,8 @@ export default function RichTextEditor({
   placeholder = "Start writing...",
 }: Props) {
   const editorRef = useRef<HTMLDivElement | null>(null);
-  const [isRTL, setIsRTL] = useState(false);
-  const [currentAlign, setCurrentAlign] = useState<
-    "left" | "center" | "right" | "justify"
-  >("left");
+  const [isRTL, setIsRTL] = useState(true);
+  const [currentAlign, setCurrentAlign] = useState<alignment>("left");
   const [activeStates, setActiveStates] = useState({
     bold: false,
     italic: false,
@@ -64,6 +69,10 @@ export default function RichTextEditor({
     emitChange();
     editorRef.current?.focus();
   };
+
+  useEffect(() => {
+    handleAlign(currentAlign);
+  }, [currentAlign]);
 
   const handleAlign = (align: string) => {
     // Use justify commands for cross-browser alignment
@@ -130,28 +139,27 @@ export default function RichTextEditor({
 
         <Divider type="vertical" />
 
-        <Button
-          type={currentAlign === "left" ? "primary" : "text"}
-          icon={<AlignLeftOutlined />}
-          onClick={() => handleAlign("left")}
-        />
-
-        <Button
-          type={currentAlign === "center" ? "primary" : "text"}
-          icon={<AlignCenterOutlined />}
-          onClick={() => handleAlign("center")}
-        />
-
-        <Button
-          type={currentAlign === "right" ? "primary" : "text"}
-          icon={<AlignRightOutlined />}
-          onClick={() => handleAlign("right")}
-        />
-
-        <Button
-          type={currentAlign === "justify" ? "primary" : "text"}
-          icon={<BorderOuterOutlined />}
-          onClick={() => handleAlign("justify")}
+        <Segmented
+          value={currentAlign}
+          onChange={(val: alignment) => handleAlign(val)}
+          options={[
+            {
+              value: "left",
+              icon: <TbAlignLeft size={16} className="mt-[5px]" />,
+            },
+            {
+              value: "center",
+              icon: <TbAlignCenter size={16} className="mt-[5px]" />,
+            },
+            {
+              value: "right",
+              icon: <TbAlignRight size={16} className="mt-[5px]" />,
+            },
+            {
+              value: "justify",
+              icon: <TbAlignJustified size={16} className="mt-[5px]" />,
+            },
+          ]}
         />
 
         <Divider type="vertical" />
@@ -159,8 +167,14 @@ export default function RichTextEditor({
           value={isRTL ? "rtl" : "ltr"}
           onChange={(val) => setIsRTL(val === "rtl")}
           options={[
-            { value: "ltr", label: "LTR" },
-            { value: "rtl", label: "RTL" },
+            {
+              value: "ltr",
+              icon: <TbTextDirectionLtr size={16} className="mt-[5px]" />,
+            },
+            {
+              value: "rtl",
+              icon: <TbTextDirectionRtl size={16} className="mt-[5px]" />,
+            },
           ]}
         />
       </div>
