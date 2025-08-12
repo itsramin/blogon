@@ -15,7 +15,7 @@ import {
   IoSpeedometerOutline,
 } from "react-icons/io5";
 
-const { Content } = Layout;
+const { Content, Footer, Sider } = Layout;
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -25,7 +25,6 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { isAuthenticated, loading, logout } = useAuth();
-  const [collapsed, setCollapsed] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
 
   if (loading) {
@@ -47,7 +46,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const menuItems = [
     {
       key: "/admin",
-      icon: <IoSpeedometerOutline size={16} />,
+      icon: <IoSpeedometerOutline size={16} className="mb-1" />,
       label: <Link to="/admin">Dashboard</Link>,
     },
     {
@@ -60,17 +59,17 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       children: [
         {
           key: "/admin/posts",
-          icon: <IoDocumentsOutline size={16} />,
+          icon: <IoDocumentsOutline size={16} className="mb-1" />,
           label: <Link to="/admin/posts">Posts</Link>,
         },
         {
           key: "/admin/categories",
-          icon: <IoFolderOpenOutline size={16} />,
+          icon: <IoFolderOpenOutline size={16} className="mb-1" />,
           label: <Link to="/admin/categories">Categories</Link>,
         },
         {
           key: "/admin/tags",
-          icon: <IoPricetagsOutline size={16} />,
+          icon: <IoPricetagsOutline size={16} className="mb-1" />,
           label: <Link to="/admin/tags">Tags</Link>,
         },
       ],
@@ -88,12 +87,12 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     },
     {
       key: "/admin/settings",
-      icon: <IoSettingsOutline size={16} />,
+      icon: <IoSettingsOutline size={16} className="mb-1" />,
       label: <Link to="/admin/settings">Settings</Link>,
     },
     {
       key: "/",
-      icon: <IoEyeOutline size={16} />,
+      icon: <IoEyeOutline size={16} className="mb-1" />,
       label: <Link to="/">Visit blog</Link>,
     },
     {
@@ -101,12 +100,8 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     },
     {
       key: "/logout",
-      icon: <IoLogOutOutline size={16} />,
-      label: (
-        <Button type="text" onClick={handleLogout}>
-          Logout
-        </Button>
-      ),
+      icon: <IoLogOutOutline size={16} className="mb-1" />,
+      label: <div onClick={handleLogout}>Logout</div>,
     },
   ];
 
@@ -127,13 +122,10 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       </div>
       <Layout>
         {/* Desktop Sider */}
-        <Layout.Sider
+        <Sider
           width={250}
-          className="bg-white border-r border-gray-200 hidden md:block"
+          className="bg-white border-r border-gray-200 hidden md:block "
           theme="light"
-          collapsible
-          collapsed={collapsed}
-          onCollapse={(value) => setCollapsed(value)}
         >
           <Menu
             mode="inline"
@@ -142,7 +134,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
             className="border-none mt-4"
             items={menuItems}
           />
-        </Layout.Sider>
+        </Sider>
 
         {/* Mobile Drawer */}
         <Drawer
@@ -169,6 +161,9 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
           </Content>
         </Layout>
       </Layout>
+      <Footer className="text-center text-gray-500 ">
+        <Link to={"/about"}>About</Link>
+      </Footer>
     </Layout>
   );
 };
