@@ -2,9 +2,9 @@ import React, { useEffect, useState } from "react";
 import { Typography, Tag, Card, Button, message, Divider } from "antd";
 import { useParams, Link } from "react-router-dom";
 import { BlogPost } from "../../types";
-import { CalendarOutlined } from "@ant-design/icons";
 import usePosts from "../../hooks/usePosts";
 import { formatIranianDate } from "../../util/dateFormatter";
+import { IoCalendarClearOutline, IoPersonOutline } from "react-icons/io5";
 
 const { Title, Text } = Typography;
 
@@ -92,9 +92,17 @@ const PostDetail: React.FC = () => {
               {post.title}
             </Title>
 
-            <div className="flex items-center text-gray-500">
-              <CalendarOutlined className="mx-2" />
-              <Text>{formatIranianDate(post.updatedAt || post.createdAt)}</Text>
+            <div className="flex items-center text-gray-400 gap-x-4">
+              <div className="flex items-center ">
+                <IoCalendarClearOutline className="mx-2" />
+                <Text className="text-gray-400">
+                  {formatIranianDate(post.updatedAt || post.createdAt)}
+                </Text>
+              </div>
+              <div className="flex items-center ">
+                <IoPersonOutline className="mx-2" /> {post.author.firstName}{" "}
+                {post.author.lastName}
+              </div>
             </div>
           </div>
 

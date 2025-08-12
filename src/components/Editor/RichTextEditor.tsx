@@ -1,10 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Button, Divider, Segmented } from "antd";
-import {
-  BoldOutlined,
-  ItalicOutlined,
-  UnderlineOutlined,
-} from "@ant-design/icons";
 
 import {
   TbAlignCenter,
@@ -13,6 +8,9 @@ import {
   TbAlignJustified,
   TbTextDirectionLtr,
   TbTextDirectionRtl,
+  TbBold,
+  TbItalic,
+  TbUnderline,
 } from "react-icons/tb";
 
 type alignment = "left" | "center" | "right" | "justify";
@@ -30,7 +28,7 @@ export default function RichTextEditor({
 }: Props) {
   const editorRef = useRef<HTMLDivElement | null>(null);
   const [isRTL, setIsRTL] = useState(true);
-  const [currentAlign, setCurrentAlign] = useState<alignment>("left");
+  const [currentAlign, setCurrentAlign] = useState<alignment>("right");
   const [activeStates, setActiveStates] = useState({
     bold: false,
     italic: false,
@@ -121,19 +119,19 @@ export default function RichTextEditor({
       <div className=" py-2 px-2 border-b border-b-[#d9d9d9] flex flex-row items-center flex-wrap  gap-2">
         <Button
           type={activeStates.bold ? "primary" : "text"}
-          icon={<BoldOutlined />}
+          icon={<TbBold size={16} className="mt-[5px]" />}
           onClick={() => exec("bold")}
         />
 
         <Button
           type={activeStates.italic ? "primary" : "text"}
-          icon={<ItalicOutlined />}
+          icon={<TbItalic size={16} className="mt-[5px]" />}
           onClick={() => exec("italic")}
         />
 
         <Button
           type={activeStates.underline ? "primary" : "text"}
-          icon={<UnderlineOutlined />}
+          icon={<TbUnderline size={16} className="mt-[5px]" />}
           onClick={() => exec("underline")}
         />
 

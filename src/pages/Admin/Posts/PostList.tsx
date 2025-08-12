@@ -15,16 +15,16 @@ import {
 } from "antd";
 import { Link } from "react-router-dom";
 import { BlogPost } from "../../../types";
-import {
-  DeleteOutlined,
-  EditOutlined,
-  EyeOutlined,
-  PlusOutlined,
-  UploadOutlined,
-} from "@ant-design/icons";
 import { format } from "date-fns";
 import usePosts from "../../../hooks/usePosts";
 import useTaxonomy from "../../../hooks/useTaxonomy";
+import {
+  IoAddOutline,
+  IoBrushOutline,
+  IoCloudUploadOutline,
+  IoEyeOutline,
+  IoTrashOutline,
+} from "react-icons/io5";
 
 const { Title } = Typography;
 const { Search: SearchInput } = Input;
@@ -156,8 +156,7 @@ const PostList: React.FC = () => {
           {record.status === "published" && (
             <Button
               type="text"
-              size="small"
-              icon={<EyeOutlined size={14} />}
+              icon={<IoEyeOutline size={16} />}
               onClick={() => window.open(`/post/${record.url}`, "_blank")}
               title="View Post"
             />
@@ -165,8 +164,7 @@ const PostList: React.FC = () => {
           <Link to={`/admin/posts/edit/${record.id}`}>
             <Button
               type="text"
-              size="small"
-              icon={<EditOutlined size={14} />}
+              icon={<IoBrushOutline size={16} />}
               title="Edit Post"
             />
           </Link>
@@ -178,9 +176,8 @@ const PostList: React.FC = () => {
           >
             <Button
               type="text"
-              size="small"
               danger
-              icon={<DeleteOutlined size={14} />}
+              icon={<IoTrashOutline size={16} />}
               title="Delete Post"
             />
           </Popconfirm>
@@ -266,13 +263,15 @@ const PostList: React.FC = () => {
             beforeUpload={handleImport}
             showUploadList={false}
           >
-            <Button icon={<UploadOutlined />}>Import XML</Button>
+            <Button icon={<IoCloudUploadOutline size={16} className="mt-1" />}>
+              Import XML
+            </Button>
           </Upload>
           <Link to="/admin/posts/new">
             <Button
               type="primary"
               size="large"
-              icon={<PlusOutlined size={16} />}
+              icon={<IoAddOutline size={16} className="mt-1" />}
             >
               New Post
             </Button>

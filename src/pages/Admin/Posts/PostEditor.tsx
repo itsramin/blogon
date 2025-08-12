@@ -14,14 +14,14 @@ import {
 import { useNavigate, useParams } from "react-router-dom";
 import { useBlog } from "../../../hooks/useBlog";
 import { BlogPost } from "../../../types";
-import {
-  ArrowLeftOutlined,
-  EyeOutlined,
-  SaveOutlined,
-} from "@ant-design/icons";
 import usePosts from "../../../hooks/usePosts";
 import useTaxonomy from "../../../hooks/useTaxonomy";
 import RichTextEditor from "../../../components/Editor/RichTextEditor";
+import {
+  IoArrowBackOutline,
+  IoEyeOutline,
+  IoSaveOutline,
+} from "react-icons/io5";
 
 const { Title } = Typography;
 
@@ -214,7 +214,10 @@ const PostEditor: React.FC = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center space-x-4">
-          <Button icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)}>
+          <Button
+            icon={<IoArrowBackOutline className="mt-1" />}
+            onClick={() => navigate(-1)}
+          >
             Back
           </Button>
           <Title level={2} className="!mb-0 text-center sm:text-left">
@@ -223,12 +226,15 @@ const PostEditor: React.FC = () => {
         </div>
 
         <Space className="flex-wrap justify-center">
-          <Button icon={<EyeOutlined />} onClick={handlePreview}>
+          <Button
+            icon={<IoEyeOutline className="mt-1" size={16} />}
+            onClick={handlePreview}
+          >
             Preview
           </Button>
           <Button
             type="default"
-            icon={<SaveOutlined />}
+            icon={<IoSaveOutline className="mt-1" size={16} />}
             loading={loading}
             onClick={() => form.submit()}
           >

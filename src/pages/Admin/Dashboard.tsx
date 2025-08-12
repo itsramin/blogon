@@ -1,15 +1,19 @@
 import React, { useEffect, useState } from "react";
 import { Card, Row, Col, List, Typography, Tag, Button } from "antd";
 import { Link } from "react-router-dom";
-import {
-  CalendarOutlined,
-  EditOutlined,
-  EyeOutlined,
-  FileTextOutlined,
-} from "@ant-design/icons";
 import { format } from "date-fns";
 import StatCard from "../../components/StatCard";
 import usePosts from "../../hooks/usePosts";
+import {
+  IoAddOutline,
+  IoBrushOutline,
+  IoCalendarClearOutline,
+  IoDocumentsOutline,
+  IoEyeOutline,
+  IoFileTrayOutline,
+  IoFolderOpenOutline,
+  IoPricetagsOutline,
+} from "react-icons/io5";
 
 const { Title } = Typography;
 
@@ -44,13 +48,14 @@ export const Dashboard: React.FC = () => {
         <Title level={2} className="mb-0">
           Dashboard
         </Title>
-
-        <Button type="primary" size="large">
-          <Link to="/admin/posts/new" className="text-white">
-            <FileTextOutlined size={16} className="mr-2" />
+        <Link to="/admin/posts/new">
+          <Button
+            type="primary"
+            icon={<IoAddOutline size={18} className="mt-1" />}
+          >
             New Post
-          </Link>
-        </Button>
+          </Button>
+        </Link>
       </div>
 
       <Row gutter={[16, 16]}>
@@ -58,7 +63,7 @@ export const Dashboard: React.FC = () => {
           <StatCard
             title="Total Posts"
             value={stats.totalPosts}
-            icon={<FileTextOutlined size={20} />}
+            icon={<IoDocumentsOutline size={20} />}
             color="blue"
           />
         </Col>
@@ -66,7 +71,7 @@ export const Dashboard: React.FC = () => {
           <StatCard
             title="Published"
             value={stats.publishedPosts}
-            icon={<EyeOutlined size={20} />}
+            icon={<IoEyeOutline size={20} />}
             color="green"
           />
         </Col>
@@ -74,7 +79,7 @@ export const Dashboard: React.FC = () => {
           <StatCard
             title="Drafts"
             value={stats.draftPosts}
-            icon={<EditOutlined size={20} />}
+            icon={<IoFileTrayOutline size={20} />}
             color="orange"
           />
         </Col>
@@ -90,11 +95,8 @@ export const Dashboard: React.FC = () => {
                 <List.Item
                   actions={[
                     <Link key="edit" to={`/admin/posts/edit/${post.id}`}>
-                      <Button type="link" size="small">
-                        <EditOutlined size={14} />
-                        <span className="hidden sm:inline-block ml-1">
-                          Edit
-                        </span>
+                      <Button type="link" icon={<IoBrushOutline size={14} />}>
+                        <span className="hidden sm:inline-block">Edit</span>
                       </Button>
                     </Link>,
                   ]}
@@ -120,7 +122,10 @@ export const Dashboard: React.FC = () => {
                     description={
                       <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 text-sm text-gray-500">
                         <span className="flex items-center">
-                          <CalendarOutlined size={14} className="mr-1" />
+                          <IoCalendarClearOutline
+                            size={14}
+                            className="mr-1 mb-1"
+                          />
                           {format(new Date(post.updatedAt), "MMM d, yyyy")}
                         </span>
                         <span className="hidden sm:inline-block">
@@ -139,24 +144,39 @@ export const Dashboard: React.FC = () => {
           <Card title="Quick Actions" className="shadow-sm">
             <div className="space-y-3 flex flex-col">
               <Link to="/admin/posts/new">
-                <Button type="primary" block size="large">
-                  <FileTextOutlined size={16} className="mr-2" />
+                <Button
+                  type="primary"
+                  block
+                  size="large"
+                  icon={<IoAddOutline size={16} />}
+                >
                   Create New Post
                 </Button>
               </Link>
               <Link to="/admin/posts">
-                <Button block size="large">
-                  <EditOutlined size={16} className="mr-2" />
+                <Button
+                  block
+                  size="large"
+                  icon={<IoDocumentsOutline size={16} />}
+                >
                   Manage Posts
                 </Button>
               </Link>
               <Link to="/admin/categories">
-                <Button block size="large">
+                <Button
+                  block
+                  size="large"
+                  icon={<IoFolderOpenOutline size={16} />}
+                >
                   Manage Categories
                 </Button>
               </Link>
               <Link to="/admin/tags">
-                <Button block size="large">
+                <Button
+                  block
+                  size="large"
+                  icon={<IoPricetagsOutline size={16} />}
+                >
                   Manage Tags
                 </Button>
               </Link>

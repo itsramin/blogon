@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useBlog } from "../../hooks/useBlog";
 import { useState } from "react";
-import { MenuOutlined } from "@ant-design/icons";
+import { IoMenuOutline } from "react-icons/io5";
 
 const { Header: AntHeader } = Layout;
 
@@ -47,7 +47,7 @@ export const Header: React.FC = () => {
           <div className="md:hidden absolute top-0 right-0 z-10">
             <Button
               type="text"
-              icon={<MenuOutlined />}
+              icon={<IoMenuOutline size={16} />}
               onClick={showDrawer}
               className="md:hidden"
             />

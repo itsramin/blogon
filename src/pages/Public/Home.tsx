@@ -17,7 +17,7 @@ import useTaxonomy from "../../hooks/useTaxonomy";
 import { BlogPost } from "../../types";
 import { useBlog } from "../../hooks/useBlog";
 import { useNavigate } from "react-router-dom";
-import { PlusOutlined } from "@ant-design/icons";
+import { IoAddOutline } from "react-icons/io5";
 
 const { Text } = Typography;
 const { Search: SearchInput } = Input;
@@ -199,7 +199,7 @@ export const Home: React.FC = () => {
           type="primary"
           onClick={() => navigate("/admin/posts/new")}
           tooltip="Create new post"
-          icon={<PlusOutlined />}
+          icon={<IoAddOutline size={18} />}
         />
       )}
     </div>

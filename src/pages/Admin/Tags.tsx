@@ -1,13 +1,13 @@
 import React, { useState } from "react";
 import { Table, Button, Input, Modal, Form, Space } from "antd";
-import {
-  DeleteOutlined,
-  EditOutlined,
-  PlusOutlined,
-  CheckOutlined,
-  CloseOutlined,
-} from "@ant-design/icons";
 import useTaxonomy from "../../hooks/useTaxonomy";
+import {
+  IoAddOutline,
+  IoBrushOutline,
+  IoCheckmarkOutline,
+  IoCloseOutline,
+  IoTrashOutline,
+} from "react-icons/io5";
 
 interface TagItem {
   key: string;
@@ -51,15 +51,14 @@ const TagsPage: React.FC = () => {
           return (
             <Space size="middle">
               <Button
-                icon={<CheckOutlined />}
+                icon={<IoCheckmarkOutline size={16} className="mt-1" />}
                 onClick={() => handleSave(record)}
                 type="primary"
-                size="small"
               />
               <Button
-                icon={<CloseOutlined />}
+                icon={<IoCloseOutline size={16} className="mt-1" />}
                 onClick={() => setEditingKey(null)}
-                size="small"
+                type="default"
               />
             </Space>
           );
@@ -67,15 +66,15 @@ const TagsPage: React.FC = () => {
         return (
           <Space size="middle">
             <Button
-              icon={<EditOutlined />}
+              icon={<IoBrushOutline size={16} className="mt-1" />}
               onClick={() => handleEdit(record)}
-              size="small"
+              type="text"
             />
             <Button
-              icon={<DeleteOutlined />}
+              icon={<IoTrashOutline size={16} className="mt-1" />}
               onClick={() => handleDelete(record)}
               danger
-              size="small"
+              type="text"
             />
           </Space>
         );
@@ -134,7 +133,11 @@ const TagsPage: React.FC = () => {
     <div className="p-6 bg-white rounded-lg shadow">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Tags</h1>
-        <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
+        <Button
+          type="primary"
+          icon={<IoAddOutline size={16} className="mt-1" />}
+          onClick={handleAdd}
+        >
           Add Tag
         </Button>
       </div>

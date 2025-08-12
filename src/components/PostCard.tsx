@@ -1,9 +1,9 @@
 import { Button, Card, Tag, Typography } from "antd";
 import { Link } from "react-router-dom";
-import { CalendarOutlined, EditOutlined } from "@ant-design/icons";
 import { BlogPost } from "../types";
 import { formatIranianDate } from "../util/dateFormatter";
 import { useAuth } from "../context/AuthContext";
+import { IoBrushOutline, IoCalendarClearOutline } from "react-icons/io5";
 
 interface PostCardProps {
   post: BlogPost;
@@ -29,7 +29,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
           </Title>
           {isAuthenticated && (
             <Link to={`/admin/posts/edit/${post.id}`}>
-              <Button icon={<EditOutlined />} />
+              <Button icon={<IoBrushOutline size={16} className="mt-1" />} />
             </Link>
           )}
         </div>
@@ -44,9 +44,12 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
         />
       </div>
 
-      <div className="flex items-center justify-between text-sm text-gray-500 mt-4 pt-3 border-t border-gray-100">
+      <div className="flex items-center justify-between text-sm text-gray-400 mt-4 pt-3 border-t border-gray-100">
         <div className="flex items-center">
-          <CalendarOutlined size={14} className="px-1" />
+          <IoCalendarClearOutline
+            size={16}
+            className="mx-1 mb-1 text-gray-400"
+          />
           {formatIranianDate(post.updatedAt)}
         </div>
         <div>

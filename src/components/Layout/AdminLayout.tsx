@@ -3,17 +3,17 @@ import { Layout, Menu, Drawer, Button } from "antd";
 import { Link, useLocation, Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { Header as AdminHeader } from "./Header";
+
 import {
-  SettingOutlined,
-  FolderOpenOutlined,
-  BarChartOutlined,
-  FileTextOutlined,
-  TagOutlined,
-  // LinkOutlined,
-  MenuOutlined,
-  EyeOutlined,
-  LogoutOutlined,
-} from "@ant-design/icons";
+  IoDocumentsOutline,
+  IoEyeOutline,
+  IoFolderOpenOutline,
+  IoLogOutOutline,
+  IoMenuOutline,
+  IoPricetagsOutline,
+  IoSettingsOutline,
+  IoSpeedometerOutline,
+} from "react-icons/io5";
 
 const { Content } = Layout;
 
@@ -47,7 +47,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const menuItems = [
     {
       key: "/admin",
-      icon: <BarChartOutlined />,
+      icon: <IoSpeedometerOutline size={16} />,
       label: <Link to="/admin">Dashboard</Link>,
     },
     {
@@ -60,17 +60,17 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       children: [
         {
           key: "/admin/posts",
-          icon: <FileTextOutlined />,
+          icon: <IoDocumentsOutline size={16} />,
           label: <Link to="/admin/posts">Posts</Link>,
         },
         {
           key: "/admin/categories",
-          icon: <FolderOpenOutlined />,
+          icon: <IoFolderOpenOutline size={16} />,
           label: <Link to="/admin/categories">Categories</Link>,
         },
         {
           key: "/admin/tags",
-          icon: <TagOutlined />,
+          icon: <IoPricetagsOutline size={16} />,
           label: <Link to="/admin/tags">Tags</Link>,
         },
       ],
@@ -88,12 +88,12 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     },
     {
       key: "/admin/settings",
-      icon: <SettingOutlined />,
+      icon: <IoSettingsOutline size={16} />,
       label: <Link to="/admin/settings">Settings</Link>,
     },
     {
       key: "/",
-      icon: <EyeOutlined />,
+      icon: <IoEyeOutline size={16} />,
       label: <Link to="/">Visit blog</Link>,
     },
     {
@@ -101,7 +101,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     },
     {
       key: "/logout",
-      icon: <LogoutOutlined />,
+      icon: <IoLogOutOutline size={16} />,
       label: (
         <Button type="text" onClick={handleLogout}>
           Logout
@@ -120,7 +120,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       <div className="md:hidden absolute top-4 right-4 z-10">
         <Button
           type="text"
-          icon={<MenuOutlined />}
+          icon={<IoMenuOutline size={16} />}
           onClick={toggleDrawer}
           className="flex items-center justify-center"
         />
