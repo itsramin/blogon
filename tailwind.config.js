@@ -7,6 +7,7 @@ export default {
         vazirmatn: ["Vazirmatn", "sans-serif"],
         // You can keep your existing font stack for non-Persian content
         sans: [
+          "Vazirmatn",
           "Inter",
           "-apple-system",
           "BlinkMacSystemFont",
