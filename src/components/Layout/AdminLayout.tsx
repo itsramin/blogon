@@ -119,7 +119,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       <AdminHeader />
       <div className="md:hidden absolute top-4 right-4 z-10">
         <Button
-          type="default"
+          type="text"
           icon={<MenuOutlined />}
           onClick={toggleDrawer}
           className="flex items-center justify-center"

@@ -1,8 +1,9 @@
-import { Card, Tag, Typography } from "antd";
+import { Button, Card, Tag, Typography } from "antd";
 import { Link } from "react-router-dom";
-import { CalendarOutlined } from "@ant-design/icons";
+import { CalendarOutlined, EditOutlined } from "@ant-design/icons";
 import { BlogPost } from "../types";
 import { formatIranianDate } from "../util/dateFormatter";
+import { useAuth } from "../context/AuthContext";
 
 interface PostCardProps {
   post: BlogPost;
@@ -10,10 +11,11 @@ interface PostCardProps {
 
 const PostCard: React.FC<PostCardProps> = ({ post }) => {
   const { Title } = Typography;
+  const { isAuthenticated } = useAuth();
 
   return (
     <Card
-      className="shadow-sm hover:shadow-md transition-shadow duration-200 h-full flex flex-col"
+      className="shadow-sm   hover:shadow-md transition-shadow duration-200 h-full flex flex-col"
       styles={{ body: { flex: 1, display: "flex", flexDirection: "column" } }}
       style={{
         direction: "rtl",
@@ -21,14 +23,16 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
       }}
     >
       <div className="flex-1">
-        <Title level={4} className="mb-2 line-clamp-2">
-          <Link
-            to={`/post/${post.url}`}
-            className="text-gray-800 hover:text-blue-600 transition-colors"
-          >
-            {post.title}
-          </Link>
-        </Title>
+        <div className="flex items-center justify-between">
+          <Title level={4} className="mb-2 line-clamp-2">
+            <Link to={`/post/${post.url}`}>{post.title}</Link>
+          </Title>
+          {isAuthenticated && (
+            <Link to={`/admin/posts/edit/${post.id}`}>
+              <Button icon={<EditOutlined />} />
+            </Link>
+          )}
+        </div>
 
         <div
           className="prose prose-sm max-w-none break-words line-clamp-3"

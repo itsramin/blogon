@@ -1,11 +1,23 @@
 import React, { useEffect, useState } from "react";
-import { Card, Typography, Input, Select, Pagination, Spin, Tabs } from "antd";
+import {
+  Card,
+  Typography,
+  Input,
+  Select,
+  Pagination,
+  Spin,
+  Tabs,
+  FloatButton,
+} from "antd";
 import PostCard from "../../components/PostCard";
 import { useAuth } from "../../context/AuthContext";
 import usePosts from "../../hooks/usePosts";
 import Feeds from "../Admin/Feeds";
 import useTaxonomy from "../../hooks/useTaxonomy";
 import { BlogPost } from "../../types";
+import { useBlog } from "../../hooks/useBlog";
+import { useNavigate } from "react-router-dom";
+import { PlusOutlined } from "@ant-design/icons";
 
 const { Text } = Typography;
 const { Search: SearchInput } = Input;
@@ -13,6 +25,7 @@ const { Search: SearchInput } = Input;
 export const Home: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 6;
+  const { blogInfo } = useBlog();
   const { isAuthenticated } = useAuth();
   const { posts, loading } = usePosts();
   const { categories, tags } = useTaxonomy();
@@ -20,6 +33,7 @@ export const Home: React.FC = () => {
   const [selectedTagList, setTagList] = useState<string[]>([]);
   const [filteredPosts, setFilteredPosts] = useState<BlogPost[]>(posts);
   const [searchTerm, setSearchTerm] = useState<string>("");
+  const navigate = useNavigate();
 
   const handleCategoryChange = (value: string) => {
     setCategory(value);
@@ -111,6 +125,18 @@ export const Home: React.FC = () => {
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-16">
+      {blogInfo && (
+        <div className="mb-8 text-center">
+          {blogInfo.shortDescription && (
+            <h2 className="text-xl text-gray-700 mb-2">
+              {blogInfo.shortDescription}
+            </h2>
+          )}
+          {blogInfo.fullDescription && (
+            <p className="text-gray-600">{blogInfo.fullDescription}</p>
+          )}
+        </div>
+      )}
       {/* Search and Filters */}
       <Card className="shadow-sm mb-8">
         <div className="flex flex-col sm:flex-row gap-4">
@@ -167,6 +193,14 @@ export const Home: React.FC = () => {
         />
       ) : (
         myPosts
+      )}
+      {isAuthenticated && (
+        <FloatButton
+          type="primary"
+          onClick={() => navigate("/admin/posts/new")}
+          tooltip="Create new post"
+          icon={<PlusOutlined />}
+        />
       )}
     </div>
   );

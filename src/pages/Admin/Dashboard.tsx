@@ -36,7 +36,7 @@ export const Dashboard: React.FC = () => {
       (a, b) =>
         new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
     )
-    .slice(0, 5);
+    .slice(0, 10);
 
   return (
     <div className="space-y-6">
@@ -126,11 +126,6 @@ export const Dashboard: React.FC = () => {
                         <span className="hidden sm:inline-block">
                           by {post.author.firstName} {post.author.lastName}
                         </span>
-                        {post.categories.length > 0 && (
-                          <span className="hidden md:inline-block">
-                            in {post.categories.join(", ")}
-                          </span>
-                        )}
                       </div>
                     }
                   />

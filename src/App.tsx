@@ -23,6 +23,7 @@ import TagsPage from "./pages/Admin/Tags";
 import CategoriesPage from "./pages/Admin/Categories";
 import Followings from "./pages/Admin/Followings";
 import RSSPage from "./pages/Public/RSSPage";
+import About from "./pages/Public/About";
 
 const antTheme = {
   token: {
@@ -46,6 +47,14 @@ function App() {
               element={
                 <PublicLayout>
                   <Home />
+                </PublicLayout>
+              }
+            />
+            <Route
+              path="/about"
+              element={
+                <PublicLayout>
+                  <About />
                 </PublicLayout>
               }
             />
@@ -135,7 +144,6 @@ function App() {
                 </AdminLayout>
               }
             />
-            
 
             {/* Catch all route */}
             <Route path="*" element={<Navigate to="/" replace />} />

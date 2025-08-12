@@ -44,8 +44,8 @@ const PostEditor: React.FC = () => {
     } else {
       form.setFieldsValue({
         author: {
-          firstName: blogInfo?.owner.firstName || "Admin",
-          lastName: blogInfo?.owner.lastName || "",
+          firstName: blogInfo?.owner.firstName || "first name",
+          lastName: blogInfo?.owner.lastName || "last name",
         },
         status: "draft",
       });
@@ -120,7 +120,9 @@ const PostEditor: React.FC = () => {
 
       await savePost(postData);
 
-      if (!isEditing) {
+      if (publish) {
+        navigate(`/admin/posts`);
+      } else if (!isEditing) {
         navigate(`/admin/posts/edit/${postData.id}`);
       }
       setIsEditing(true);
@@ -212,10 +214,7 @@ const PostEditor: React.FC = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center space-x-4">
-          <Button
-            icon={<ArrowLeftOutlined />}
-            onClick={() => navigate("/admin/posts")}
-          >
+          <Button icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)}>
             Back
           </Button>
           <Title level={2} className="!mb-0 text-center sm:text-left">

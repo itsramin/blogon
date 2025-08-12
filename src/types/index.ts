@@ -40,15 +40,7 @@ export interface BlogData {
   posts: BlogPost[];
 }
 
-export interface User {
-  id: string;
-  username: string;
-  email: string;
-  role: "admin" | "editor";
-}
-
 export interface AuthState {
   isAuthenticated: boolean;
-  user: User | null;
   loading: boolean;
 }

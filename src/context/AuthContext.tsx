@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { AuthState, User } from "../types";
+import { AuthState } from "../types";
 
 interface AuthContextType extends AuthState {
   login: (username: string, password: string) => Promise<boolean>;
@@ -16,13 +16,6 @@ export const useAuth = () => {
   return context;
 };
 
-const DEMO_USER: User = {
-  id: "1",
-  username: "admin",
-  email: "admin@weblog.com",
-  role: "admin",
-};
-
 // Demo credentials - in production, this would be environment variables
 const ADMIN_CREDENTIALS = {
   username: import.meta.env.VITE_ADMIN_USERNAME,
@@ -34,7 +27,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [authState, setAuthState] = useState<AuthState>({
     isAuthenticated: false,
-    user: null,
     loading: true,
   });
 
@@ -44,7 +36,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     if (token) {
       setAuthState({
         isAuthenticated: true,
-        user: DEMO_USER,
         loading: false,
       });
     } else {
@@ -68,7 +59,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       localStorage.setItem("weblog_auth_token", "demo_token_123");
       setAuthState({
         isAuthenticated: true,
-        user: DEMO_USER,
         loading: false,
       });
       return true;
@@ -82,7 +72,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     localStorage.removeItem("weblog_auth_token");
     setAuthState({
       isAuthenticated: false,
-      user: null,
       loading: false,
     });
   };

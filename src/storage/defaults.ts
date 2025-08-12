@@ -6,9 +6,9 @@ export const getDefaultBlogInfo = (): BlogInfo => ({
   shortDescription: "A blog about interesting things",
   fullDescription: "Detailed description of my blog's content and purpose",
   owner: {
-    userName: "admin",
-    firstName: "Admin",
-    lastName: "User",
+    userName: "username",
+    firstName: "first name",
+    lastName: "last name",
   },
   authors: [],
   rssFeeds: [],

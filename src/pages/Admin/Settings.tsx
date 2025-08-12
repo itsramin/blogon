@@ -65,13 +65,13 @@ const Settings: React.FC = () => {
 
         <Divider orientation="left">Owner Information</Divider>
 
-        <Form.Item
+        {/* <Form.Item
           name={["owner", "userName"]}
           label="Username"
           rules={[{ required: true, message: "Please input your username!" }]}
         >
           <Input placeholder="admin" />
-        </Form.Item>
+        </Form.Item> */}
 
         <Form.Item
           name={["owner", "firstName"]}
