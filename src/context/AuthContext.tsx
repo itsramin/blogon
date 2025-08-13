@@ -60,10 +60,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const loginWithGitHub = () => {
     const clientId = import.meta.env.VITE_GITHUB_CLIENT_ID;
-    const redirectUri = import.meta.env.VITE_DOMAIN;
+    const redirectUri = `${import.meta.env.VITE_DOMAIN}/githubCallback`;
     window.location.href = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(
       redirectUri
-    )}/githubCallback&scope=read:user`;
+    )}&scope=read:user`;
   };
 
   const handleGitHubCallback = async (code: string) => {
