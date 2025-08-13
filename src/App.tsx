@@ -24,6 +24,7 @@ import CategoriesPage from "./pages/Admin/Categories";
 import Followings from "./pages/Admin/Followings";
 import RSSPage from "./pages/Public/RSSPage";
 import About from "./pages/Public/About";
+import { GitHubCallback } from "./pages/Admin/GitHubCallback";
 
 const antTheme = {
   token: {
@@ -41,6 +42,7 @@ function App() {
         <Router>
           <Routes>
             <Route path="/rss.xml" element={<RSSPage />} />
+            <Route path="/githubCallback" element={<GitHubCallback />} />
             {/* Public Routes */}
             <Route
               path="/"

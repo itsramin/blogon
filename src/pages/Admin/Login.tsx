@@ -2,13 +2,14 @@ import { useState } from "react";
 import { Card, Form, Input, Button, Alert, Typography } from "antd";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { GithubOutlined } from "@ant-design/icons";
 
 const { Title, Text } = Typography;
 
 export const AdminLogin: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const { isAuthenticated, login } = useAuth();
+  const { isAuthenticated, login, loginWithGitHub } = useAuth();
   const navigate = useNavigate();
 
   if (isAuthenticated) {
@@ -83,6 +84,16 @@ export const AdminLogin: React.FC = () => {
                 className="w-full"
               >
                 Sign In
+              </Button>
+            </Form.Item>
+            <Form.Item>
+              <Button
+                icon={<GithubOutlined />}
+                size="large"
+                block
+                onClick={() => loginWithGitHub()}
+              >
+                Sign in with GitHub
               </Button>
             </Form.Item>
           </Form>
