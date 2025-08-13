@@ -1,18 +1,17 @@
-// Header.tsx
 import { Layout, Button, Drawer, Menu } from "antd";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useBlog } from "../../hooks/useBlog";
 import { useState } from "react";
 import { IoMenuOutline } from "react-icons/io5";
-import { GithubOutlined } from "@ant-design/icons"; // Add this import
+import { GithubOutlined } from "@ant-design/icons";
 
 const { Header: AntHeader } = Layout;
 
 export const Header: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { isAuthenticated, loginWithGitHub } = useAuth(); // Add loginWithGitHub
+  const { isAuthenticated, loginWithGitHub } = useAuth();
   const { blogInfo } = useBlog();
   const [drawerVisible, setDrawerVisible] = useState(false);
 
@@ -34,7 +33,7 @@ export const Header: React.FC = () => {
             to="/admin"
             className="flex items-center space-x-2 text-lg sm:text-xl font-bold text-gray-800"
           >
-            <span>{blogInfo?.title || "blog"}</span>
+            <span>{blogInfo?.title || ""}</span>
           </Link>
         </div>
       </AntHeader>
@@ -60,7 +59,7 @@ export const Header: React.FC = () => {
             to="/"
             className="absolute left-1/2 transform  -translate-x-1/2 text-lg sm:text-2xl font-bold text-gray-800 whitespace-nowrap"
           >
-            {blogInfo?.title || "blog"}
+            {blogInfo?.title || ""}
           </Link>
 
           {/* Desktop buttons (hidden on mobile) */}
@@ -73,7 +72,7 @@ export const Header: React.FC = () => {
               <Button
                 type="default"
                 icon={<GithubOutlined />}
-                onClick={loginWithGitHub} // Changed to use GitHub login directly
+                onClick={loginWithGitHub}
               >
                 Sign in with GitHub
               </Button>
