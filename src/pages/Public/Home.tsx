@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Card,
   Typography,
@@ -43,7 +43,7 @@ export const Home: React.FC = () => {
     setTagList(values);
   };
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     let result = [...posts];
 
     // Filter by search term

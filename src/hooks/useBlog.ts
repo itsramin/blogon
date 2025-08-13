@@ -1,4 +1,4 @@
-import { useState, useCallback, useLayoutEffect } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { BlogInfo } from "../types";
 import { blogStorage } from "../storage/blogStorage";
 
@@ -42,7 +42,7 @@ export const useBlog = () => {
     [loadBlogInfo]
   );
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     loadBlogInfo();
   }, [loadBlogInfo]);
 
