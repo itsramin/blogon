@@ -5,6 +5,7 @@ import { BlogPost } from "../../types";
 import usePosts from "../../hooks/usePosts";
 import { formatIranianDate } from "../../util/dateFormatter";
 import { IoCalendarClearOutline, IoPersonOutline } from "react-icons/io5";
+import GiscusComments from "../../components/GiscusComments";
 
 const { Title, Text } = Typography;
 
@@ -190,6 +191,8 @@ const PostDetail: React.FC = () => {
               </div>
             </>
           )}
+
+          <GiscusComments mapping="specific" term={slug} />
         </Card>
       </div>
     </>
