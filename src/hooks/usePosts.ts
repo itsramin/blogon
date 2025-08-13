@@ -78,6 +78,23 @@ function usePosts() {
     },
     [loadData]
   );
+  const deletePosts = useCallback(
+    async (ids: string[]): Promise<void> => {
+      setLoading(true);
+      setError(null);
+      try {
+        await blogStorage.deletePosts(ids);
+        await loadData();
+      } catch (error) {
+        console.error("Failed to delete posts:", error);
+        setError("Failed to delete posts");
+        throw error;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [loadData]
+  );
 
   const addPostsFromXML = useCallback(
     async (xmlContent: string): Promise<void> => {
@@ -111,6 +128,7 @@ function usePosts() {
     getPostById,
     savePost,
     deletePost,
+    deletePosts,
     addPostsFromXML,
   };
 }

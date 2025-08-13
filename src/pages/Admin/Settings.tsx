@@ -1,4 +1,4 @@
-import { Form, Input, Button, Card, Space, Divider } from "antd";
+import { Form, Input, Button, Card, Space, Divider, message } from "antd";
 import { useBlog } from "../../hooks/useBlog";
 import { BlogInfo } from "../../types";
 import { useEffect } from "react";
@@ -16,7 +16,12 @@ const Settings: React.FC = () => {
   }, [blogInfo, form]);
 
   const onFinish = async (values: Partial<BlogInfo>) => {
-    await updateBlogInfo(values);
+    try {
+      await updateBlogInfo(values);
+      message.success("Blog settings updated successfully!");
+    } catch (error) {
+      message.error("Blog settings couldn't updated");
+    }
   };
 
   return (

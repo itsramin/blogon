@@ -97,6 +97,20 @@ class BlogStorage {
       throw error;
     }
   }
+  async deletePosts(ids: string[]): Promise<void> {
+    await this.initialize();
+    this.cache.posts = this.cache.posts.filter(
+      (post) => !ids.includes(post.id)
+    );
+
+    try {
+      const xml = await this.exportData();
+      await saveToGist(xml);
+    } catch (error) {
+      console.error("Failed to update Gist after bulk deletion:", error);
+      throw error;
+    }
+  }
 
   async getPublishedPosts(): Promise<BlogPost[]> {
     await this.initialize();

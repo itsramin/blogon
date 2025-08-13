@@ -38,11 +38,13 @@ const PostList: React.FC = () => {
     refreshPosts,
     deletePost,
     addPostsFromXML,
+    deletePosts,
   } = usePosts();
   const { tags, categories } = useTaxonomy();
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [selectedCat, setSelectedCat] = useState<string>("all");
+  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
 
   const filteredPosts = posts.filter((post) => {
     const matchesStatus =
@@ -65,6 +67,18 @@ const PostList: React.FC = () => {
       message.error("Failed to delete post");
     }
   };
+  // Replace handleBulkDelete with:
+  const handleBulkDelete = async () => {
+    try {
+      await deletePosts(selectedRowKeys as string[]);
+      setSelectedRowKeys([]);
+      refreshPosts();
+      message.success(`Successfully deleted ${selectedRowKeys.length} posts`);
+    } catch (error) {
+      message.error("Failed to delete selected posts");
+    }
+  };
+
   const handleImport = async (file: File) => {
     const reader = new FileReader();
     reader.onload = async (e) => {
@@ -79,21 +93,27 @@ const PostList: React.FC = () => {
     return false;
   };
 
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: (newSelectedRowKeys: React.Key[]) => {
+      setSelectedRowKeys(newSelectedRowKeys);
+    },
+  };
+
+  const hasSelected = selectedRowKeys.length > 0;
+
   const columns = [
     {
       title: "Title",
       dataIndex: "title",
       key: "title",
       render: (title: string, record: BlogPost) => (
-        <div>
-          <Link
-            to={`/admin/posts/edit/${record.id}`}
-            className="text-gray-800 hover:text-blue-600 font-medium"
-          >
-            {title}
-          </Link>
-          <div className="text-sm text-gray-500 mt-1">/{record.url}</div>
-        </div>
+        <Link
+          to={`/admin/posts/edit/${record.id}`}
+          className="text-gray-800 hover:text-blue-600 font-medium"
+        >
+          {title}
+        </Link>
       ),
     },
     {
@@ -109,7 +129,7 @@ const PostList: React.FC = () => {
     },
     {
       title: "Categories",
-      dataIndex: "categories", // This is correct if your BlogPost has categories array
+      dataIndex: "categories",
       key: "categories",
       width: 200,
       responsive: ["md" as Breakpoint],
@@ -125,7 +145,7 @@ const PostList: React.FC = () => {
     },
     {
       title: "Tags",
-      dataIndex: "tags", // Changed from "tag" to "tags"
+      dataIndex: "tags",
       key: "tags",
       width: 150,
       responsive: ["lg" as Breakpoint],
@@ -236,7 +256,28 @@ const PostList: React.FC = () => {
         </Select>
       </div>
 
+      <div className="mb-4">
+        {hasSelected && (
+          <Popconfirm
+            title={`Are you sure you want to delete ${selectedRowKeys.length} selected posts?`}
+            onConfirm={handleBulkDelete}
+            okText="Yes"
+            cancelText="No"
+          >
+            <Button
+              type="primary"
+              danger
+              icon={<IoTrashOutline size={16} />}
+              disabled={!hasSelected}
+            >
+              Delete Selected ({selectedRowKeys.length})
+            </Button>
+          </Popconfirm>
+        )}
+      </div>
+
       <Table
+        rowSelection={rowSelection}
         columns={columns}
         dataSource={filteredPosts}
         rowKey="id"

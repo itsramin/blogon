@@ -28,6 +28,15 @@ export const saveToGist = async (xmlContent: string): Promise<void> => {
   });
 
   if (!response.ok) {
+    if (response.status === 403) {
+      const rateLimitReset = response.headers.get("X-RateLimit-Reset");
+      if (rateLimitReset) {
+        const resetTime = new Date(parseInt(rateLimitReset) * 1000);
+        throw new Error(
+          `GitHub API rate limit exceeded. Try again after ${resetTime.toLocaleTimeString()}`
+        );
+      }
+    }
     throw new Error(`Gist save failed: ${response.statusText}`);
   }
 };
