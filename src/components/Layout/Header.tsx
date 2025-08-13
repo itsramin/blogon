@@ -1,16 +1,18 @@
+// Header.tsx
 import { Layout, Button, Drawer, Menu } from "antd";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useBlog } from "../../hooks/useBlog";
 import { useState } from "react";
 import { IoMenuOutline } from "react-icons/io5";
+import { GithubOutlined } from "@ant-design/icons"; // Add this import
 
 const { Header: AntHeader } = Layout;
 
 export const Header: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loginWithGitHub } = useAuth(); // Add loginWithGitHub
   const { blogInfo } = useBlog();
   const [drawerVisible, setDrawerVisible] = useState(false);
 
@@ -68,8 +70,12 @@ export const Header: React.FC = () => {
                 Dashboard
               </Button>
             ) : (
-              <Button type="default" onClick={() => navigate("/admin/login")}>
-                Login
+              <Button
+                type="default"
+                icon={<GithubOutlined />}
+                onClick={loginWithGitHub} // Changed to use GitHub login directly
+              >
+                Sign in with GitHub
               </Button>
             )}
           </div>
@@ -99,9 +105,17 @@ export const Header: React.FC = () => {
             </Menu.Item>
           ) : (
             <Menu.Item key="login">
-              <Link to="/admin/login" onClick={onClose}>
-                Login
-              </Link>
+              <Button
+                type="text"
+                icon={<GithubOutlined />}
+                onClick={() => {
+                  loginWithGitHub();
+                  onClose();
+                }}
+                className="w-full text-left"
+              >
+                Sign in with GitHub
+              </Button>
             </Menu.Item>
           )}
           <Menu.Item key="about">

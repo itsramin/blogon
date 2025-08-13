@@ -1,3 +1,4 @@
+// GitHubCallback.tsx
 import { useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
@@ -10,7 +11,15 @@ export const GitHubCallback = () => {
   useEffect(() => {
     const code = params.get("code");
     if (code) {
-      handleGitHubCallback(code).then(() => navigate("/admin"));
+      handleGitHubCallback(code).then((success) => {
+        if (success) {
+          navigate("/admin");
+        } else {
+          navigate("/?error=github_auth_failed");
+        }
+      });
+    } else {
+      navigate("/?error=missing_code");
     }
   }, [params, handleGitHubCallback, navigate]);
 

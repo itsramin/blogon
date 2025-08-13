@@ -13,7 +13,6 @@ import { AdminLayout } from "./components/Layout/AdminLayout";
 import { Home } from "./pages/Public/Home";
 
 // Admin Pages
-import { AdminLogin } from "./pages/Admin/Login";
 import { Dashboard } from "./pages/Admin/Dashboard";
 import Settings from "./pages/Admin/Settings";
 import PostEditor from "./pages/Admin/Posts/PostEditor";
@@ -69,9 +68,6 @@ function App() {
                 </PublicLayout>
               }
             />
-
-            {/* Admin Login (no layout) */}
-            <Route path="/admin/login" element={<AdminLogin />} />
 
             {/* Admin Routes */}
             <Route
