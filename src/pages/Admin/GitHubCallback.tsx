@@ -1,7 +1,7 @@
-// GitHubCallback.tsx
 import { useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { message, Spin } from "antd";
 
 export const GitHubCallback = () => {
   const [params] = useSearchParams();
@@ -15,13 +15,20 @@ export const GitHubCallback = () => {
         if (success) {
           navigate("/admin");
         } else {
-          navigate("/?error=github_auth_failed");
+          message.warning("There is a problem in logging. Try again");
+          navigate("/");
         }
       });
     } else {
-      navigate("/?error=missing_code");
+      message.warning("There is a problem in logging. Try again");
+      navigate("/");
     }
   }, [params, handleGitHubCallback, navigate]);
 
-  return <p>Signing you in with GitHub...</p>;
+  return (
+    <div className="flex flex-col gap-y-4  items-center justify-center min-h-screen">
+      <Spin size="large" />
+      <div>Signing you in with GitHub...</div>
+    </div>
+  );
 };
