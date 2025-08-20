@@ -8,6 +8,8 @@ on:
 jobs:
   sync:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # Add write permissions
     steps:
       - name: Checkout fork
         uses: actions/checkout@v4
@@ -29,4 +31,5 @@ jobs:
         run: |
           git checkout master
           git merge upstream/master --allow-unrelated-histories || true
-          git push origin master
+          # Use GITHUB_TOKEN for authentication
+          git push "https://$GITHUB_ACTOR:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" master
